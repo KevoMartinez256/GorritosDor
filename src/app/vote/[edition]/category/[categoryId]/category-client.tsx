@@ -1,178 +1,77 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useChoices } from '@/hooks/useChoices'
-import { useMemo } from 'react'
 
 type Nominee = {
   id: string
   display_name: string
   avatar_url: string | null
   twitch_login?: string | null
-  // Campo extensible para otras plataformas (se mapea desde JSONB ext en la BD)
-  ext?: {
-    platform?: string | null
-    channel_url?: string | null
-    // Se pueden agregar otros campos en el futuro sin romper el tipo
-    [key: string]: any
-  }
+  ext?: { platform?: string | null; channel_url?: string | null; position?: number; image_fit?: 'contain' | 'cover'; image_position?: string }
 }
+type Category = { id: string; name: string; position: number; nominees: Nominee[] }
 
-type Category = {
-  id: string
-  name: string
-  position: number
-  nominees: Nominee[]
-}
-
-export default function CategoryClient({
-  editionId,
-  slug,
-  category,
-}: {
-  editionId: string
-  slug: string
-  category: Category
-}) {
-  const router = useRouter()
+export default function CategoryClient({ editionId, slug, category }: { editionId: string; slug: string; category: Category }) {
   const { choices, setChoice, clearChoice } = useChoices(editionId)
-  const selected = choices[category.id]
-  const count = useMemo(() => category.nominees?.length ?? 0, [category.nominees])
-
-  const onVote = (nomineeId: string) => setChoice(category.id, nomineeId)
-
-  // Asegurar siempre 4 slots (relleno con placeholders si faltan)
-  const nominees = category.nominees || []
-  const placeholdersNeeded = Math.max(0, 4 - nominees.length)
-  const placeholderArray = Array.from({ length: placeholdersNeeded })
+  const nominees = [...(category.nominees ?? [])].sort((a, b) => (a.ext?.position ?? 0) - (b.ext?.position ?? 0))
+  const selected = nominees.find(n => n.id === choices[category.id])
+  const platforms: Record<string, string> = { twitch: 'Twitch', youtube: 'YouTube', kick: 'Kick', tiktok: 'TikTok', instagram: 'Instagram', facebook: 'Facebook', x: 'X', twitter: 'X' }
 
   return (
-    <div className="space-y-8">
-      {/* Grid 4 columnas en desktop */}
-      {count > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {nominees.map((n) => {
-            // URL primaria: primero ext.channel_url, luego fallback a twitch_login
-            const rawUrl = n.ext?.channel_url || (n.twitch_login ? `https://twitch.tv/${n.twitch_login}` : null)
-
-            const normalizeExternalUrl = (url: string) => {
-              if (!url) return url
-              // Añade protocolo si falta
-              if (!/^https?:\/\//i.test(url)) return `https://${url}`
-              return url
+    <>
+      <div className="nominee-grid">
+        {nominees.map((nominee, index) => {
+          const isSelected = selected?.id === nominee.id
+          const rawUrl = nominee.ext?.channel_url || (nominee.twitch_login ? `https://www.twitch.tv/${nominee.twitch_login}` : null)
+          let externalUrl: string | null = null
+          try {
+            if (rawUrl) {
+              const url = new URL(/^https?:\/\//i.test(rawUrl) ? rawUrl : `https://${rawUrl}`)
+              if (['http:', 'https:'].includes(url.protocol)) externalUrl = url.href
             }
-
-            const externalUrl = rawUrl ? normalizeExternalUrl(rawUrl) : null
-            const platform = (n.ext?.platform || (n.twitch_login ? 'twitch' : null))?.toLowerCase() || null
-            const platformLabelMap: Record<string, string> = {
-              twitch: 'Twitch',
-              youtube: 'YouTube',
-              tiktok: 'TikTok',
-              kick: 'Kick',
-              instagram: 'Instagram',
-              facebook: 'Facebook',
-              x: 'X',
-              twitter: 'X',
-            }
-            // Si el enlace es un clip de Twitch, prioriza la etiqueta 'Ver clip'
-            const isTwitchClip = externalUrl ? /(clips\.twitch\.tv\/|twitch\.tv\/[^\s]+\/clip\/)/i.test(externalUrl) : false
-            const buttonText = isTwitchClip
-              ? 'Ver clip'
-              : platform
-                ? `Ver ${platformLabelMap[platform] ?? 'canal'}`
-                : 'Ver canal'
-            const isSel = selected === n.id
-
-            return (
-              <div
-                key={n.id}
-                className={`group relative flex flex-col overflow-hidden rounded-2xl border
-                  ${isSel ? 'border-purple-500' : 'border-neutral-800'}
-                  bg-neutral-900 hover:bg-neutral-800 transition`}
-              >
-                {/* Poster con alto consistente */}
-                <div className="aspect-[4/5] w-full overflow-hidden">
-                  <img
-                    src={n.avatar_url ?? '/placeholder.png'}
-                    alt={n.display_name}
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                  />
-                </div>
-
-                {/* Contenido: empuja acciones al fondo para igualar alturas */}
-                <div className="flex min-h-28 flex-col p-4">
-                  <div
-                    className="text-base font-semibold leading-tight truncate"
-                    title={n.display_name}
-                  >
-                    {n.display_name}
-                  </div>
-
-                  <div className="mt-auto flex items-center gap-2">
-                    <button
-                      onClick={() => onVote(n.id)}
-                      className={`flex-1 rounded-xl px-3 py-2 text-sm font-medium tracking-wide
-                        ${isSel
-                          ? 'bg-purple-600 hover:bg-purple-500'
-                          : 'bg-neutral-800 hover:bg-neutral-700'}`}
-                    >
-                      {isSel ? 'VOTADO' : 'VOTAR'}
-                    </button>
-
-                    {externalUrl && (
-                      <Link
-                        href={externalUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="whitespace-nowrap rounded-xl px-3 py-2 text-sm bg-purple-700 hover:bg-purple-600"
-                      >
-                        {buttonText}
-                      </Link>
-                    )}
-                  </div>
-                </div>
-
-                {isSel && <div className="pointer-events-none absolute inset-0 ring-2 ring-purple-500/70 rounded-2xl" />}
+          } catch {}
+          const platform = nominee.ext?.platform || (nominee.twitch_login ? 'twitch' : '')
+          const label = externalUrl && /(clips\.twitch\.tv\/|twitch\.tv\/[^\s]+\/clip\/)/i.test(externalUrl) ? 'Ver clip' : `Ver ${platforms[platform.toLowerCase()] ?? 'canal'}`
+          return (
+            <article key={nominee.id} className={`nominee-card ${isSelected ? 'is-selected' : ''}`}>
+              <div className={`nominee-image ${nominee.ext?.image_fit === 'contain' ? 'nominee-logo-image' : ''}`}>
+                <img style={{ objectPosition: nominee.ext?.image_position ?? 'center' }} src={nominee.avatar_url || '/nominee-placeholder.svg'} alt={nominee.display_name} onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/nominee-placeholder.svg' }} />
+                <span className="nominee-number">{String(index + 1).padStart(2, '0')}</span>
+                {isSelected && <span className="nominee-badge">✓ TU ELECCIÓN</span>}
               </div>
-            )
-          })}
-          {placeholderArray.map((_, i) => (
-            <div
-              key={`ph-${i}`}
-              className="flex flex-col rounded-2xl border border-dashed border-neutral-800 bg-neutral-900/40 backdrop-blur-sm p-4 items-center justify-center text-neutral-600 text-sm"
-            >
-              Próximo nominado
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-neutral-400">Sin nominados aún.</div>
-      )}
-
-      {/* Acciones inferiores */}
-      <div className="flex items-center gap-3 pt-2 flex-wrap">
-        {selected && (
-          <button
-            onClick={() => clearChoice(category.id)}
-            className="px-3 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700"
-          >
-            Quitar selección
-          </button>
-        )}
-
-        <button
-          onClick={() => router.push(`/vote/${slug}/summary`)}
-          disabled={!selected}
-          className="px-4 py-2 rounded-xl bg-purple-700 hover:bg-purple-600 disabled:opacity-50"
-        >
-          Ver resumen
-        </button>
-
-        <span className="text-sm text-neutral-400">
-          (Puedes regresar al menú y seguir con otras categorías)
-        </span>
+              <div className="nominee-body">
+                <p className="nominee-eyebrow">NOMINADO / {slug}</p>
+                <h2>{nominee.display_name}</h2>
+                <div className="nominee-buttons">
+                  <button type="button" className="gala-button gala-primary" aria-pressed={isSelected} aria-label={`Seleccionar a ${nominee.display_name}`} onClick={() => setChoice(category.id, nominee.id)}>
+                    {isSelected ? 'Seleccionado' : 'Seleccionar'} <span aria-hidden="true">{isSelected ? '✓' : '+'}</span>
+                  </button>
+                  {externalUrl && <a href={externalUrl} target="_blank" rel="noopener noreferrer" className="gala-button gala-channel">{label} <span aria-hidden="true">↗</span></a>}
+                </div>
+              </div>
+            </article>
+          )
+        })}
+        {Array.from({ length: Math.max(0, 4 - nominees.length) }, (_, i) => (
+          <article className="nominee-card nominee-pending" key={`pending-${i}`}>
+            <div className="nominee-image"><div className="nominee-pending-art" aria-hidden="true"><span>✧</span><span>EL ESCENARIO TE ESPERA</span></div><span className="nominee-number">{String(nominees.length + i + 1).padStart(2, '0')}</span></div>
+            <div className="nominee-body"><p className="nominee-eyebrow">POR ANUNCIAR</p><h2>Próximo nominado</h2><p className="nominee-pending-note">Pronto conocerás quién ocupa este lugar.</p></div>
+          </article>
+        ))}
       </div>
-    </div>
+      <section className="nominee-selection" aria-label="Tu selección en esta categoría">
+        <div className="nominee-selection-text" role="status" aria-live="polite">
+          <span className={`nominee-selection-symbol ${selected ? 'has-selection' : ''}`} aria-hidden="true">{selected ? '✓' : '✧'}</span>
+          <div><p>{selected ? <>Tu elección: <strong>{selected.display_name}</strong></> : '¿Quién se lleva tu reconocimiento?'}</p><span>{selected ? 'Selección guardada. Revisa el resumen para enviar tu voto.' : 'Elige un nominado o continúa explorando las categorías.'}</span></div>
+        </div>
+        <div className="nominee-selection-actions">
+          {selected && <button type="button" onClick={() => clearChoice(category.id)} className="gala-button gala-secondary">Quitar selección</button>}
+          <Link href={`/vote/${slug}/summary`} className="gala-button gala-primary">Ver resumen <span aria-hidden="true">↗</span></Link>
+        </div>
+      </section>
+    </>
   )
 }
+
+

@@ -1,0 +1,9 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="480" height="600" viewBox="0 0 480 600">
+  <defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#102c38"/><stop offset="1" stop-color="#090e18"/></linearGradient></defs>
+  <rect width="480" height="600" fill="url(#bg)"/>
+  <rect x="24" y="24" width="432" height="552" rx="20" fill="none" stroke="#d7b879" stroke-opacity=".2"/>
+  <circle cx="240" cy="240" r="56" fill="#27434e" stroke="#dfc48e" stroke-opacity=".5"/>
+  <path d="M136 390v-24a104 82 0 0 1 208 0v24" fill="#27434e" stroke="#dfc48e" stroke-opacity=".5"/>
+  <text x="240" y="455" text-anchor="middle" fill="#e4ce9e" font-family="Arial,sans-serif" font-size="17" letter-spacing="3">IMAGEN PENDIENTE</text>
+  <text x="240" y="532" text-anchor="middle" fill="#8da6b2" font-family="Arial,sans-serif" font-size="12" letter-spacing="4">GORRITOS D’OR 2026</text>
+</svg>

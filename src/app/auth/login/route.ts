@@ -1,20 +1,18 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase-server';
 
-export async function GET() {
+export async function GET(req: Request) {
+  const origin = new URL(req.url).origin;
   const supabase = supabaseServer();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'twitch',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-      queryParams: { scope: 'user:read:email' },
+      redirectTo: `${origin}/auth/callback`,
+      scopes: 'user:read:email',
     },
   });
-
   if (error || !data?.url) {
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/?auth_error=1`);
+    return NextResponse.redirect(new URL('/?auth_error=login', origin));
   }
-
-  // IMPORTANTÍSIMO: redirigir (no hacer fetch)
   return NextResponse.redirect(data.url);
 }

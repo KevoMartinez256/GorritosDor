@@ -1,13 +1,13 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase-server';
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const code = url.searchParams.get('code');
-  if (code) {
-    const supabase = supabaseServer();
-    await supabase.auth.exchangeCodeForSession(code);
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/`);
+  if (url.searchParams.has('error') || !code) {
+    return NextResponse.redirect(new URL('/?auth_error=callback', url.origin));
   }
-  return NextResponse.redirect(`${process.env.NEXT_PUBLIC_SITE_URL}/?auth_error=missing_code`);
+  const supabase = supabaseServer();
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  return NextResponse.redirect(new URL(error ? '/?auth_error=session' : '/', url.origin));
 }

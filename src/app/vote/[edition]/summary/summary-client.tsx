@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 import Link from 'next/link'
 import { useChoices } from '@/hooks/useChoices'
 import { useMemo, useState } from 'react'
@@ -75,7 +75,7 @@ export default function SummaryClient({
               {/* Poster con alto consistente */}
               <div className="aspect-[4/5] w-full overflow-hidden">
                 <img
-                  src={n?.avatar_url ?? '/placeholder.png'}
+                  src={n?.avatar_url || '/nominee-placeholder.svg'}
                   alt={n?.display_name ?? ''}
                   className="h-full w-full object-cover"
                 />
@@ -126,3 +126,4 @@ export default function SummaryClient({
     </div>
   )
 }
+

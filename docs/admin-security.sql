@@ -1,0 +1,11 @@
+begin;
+alter table public.editions enable row level security;
+alter table public.categories enable row level security;
+alter table public.nominees enable row level security;
+create policy "public reads editions" on public.editions for select to anon, authenticated using (true);
+create policy "public reads categories" on public.categories for select to anon, authenticated using (true);
+create policy "public reads nominees" on public.nominees for select to anon, authenticated using (true);
+revoke insert,update,delete,truncate,references,trigger on public.editions,public.categories,public.nominees from anon,authenticated;
+revoke all on public.votes from anon;
+revoke update,delete,truncate,references,trigger on public.votes from authenticated;
+commit;

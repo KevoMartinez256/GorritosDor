@@ -28,3 +28,223 @@ body {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.awards-home {
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  overflow: hidden;
+  background: #02151e;
+  color: white;
+}
+.awards-background { object-fit: cover; object-position: center top; }
+.awards-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 35%, rgb(0 12 20 / .18) 48%, rgb(0 10 18 / .82) 100%);
+}
+.awards-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: max(48svh, 340px) 20px 36px;
+  text-align: center;
+  text-shadow: 0 2px 16px rgb(0 0 0 / .75);
+}
+.awards-eyebrow { font-size: 10px; letter-spacing: .35em; color: #c2edf2; }
+.awards-title {
+  margin-top: 8px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(44px, 6vw, 88px);
+  line-height: 1.08;
+  letter-spacing: -.045em;
+  color: #f6dfad;
+}
+.awards-edition { margin-top: 10px; font-size: 13px; font-weight: 600; letter-spacing: .35em; color: #edc77b; }
+.awards-edition span { margin: 0 10px; opacity: .5; }
+.awards-rule { width: 64px; height: 1px; margin: 18px 0; background: #edc77b; opacity: .65; }
+.awards-date { font-size: clamp(22px, 3vw, 36px); font-weight: 700; letter-spacing: .12em; }
+@media (max-width: 640px) {
+  .awards-background { object-fit: cover; height: 75svh !important; }
+  .awards-shade { background: linear-gradient(to bottom, transparent 25%, rgb(2 21 30 / .15) 38%, #02151e 75%); }
+  .awards-content { padding-top: max(39svh, 260px); }
+}
+
+/* Category ballot: community awards gallery */
+.ballot-page { min-height: 100svh; color: #edf3f3; background: linear-gradient(135deg, rgb(3 20 27 / .95), rgb(4 18 25 / .91) 55%, rgb(5 34 39 / .94)); }
+.ballot-shell { max-width: 1280px; margin: 0 auto; padding: 0 40px; }
+.ballot-nav { display: flex; justify-content: space-between; align-items: center; padding: 27px 0; border-bottom: 1px solid #ffffff12; }
+.ballot-brand { font: 29px Georgia, serif; color: #f2d9a8; letter-spacing: -1px; }
+.ballot-brand span { display: block; margin-top: 6px; font: 9px Arial, sans-serif; letter-spacing: 4px; color: #a6b7bb; }
+.ballot-home { font-size: 12px; color: #a6b7bb; }
+.ballot-home span { margin-left: 20px; color: #e8d4ad; }
+.ballot-intro { display: grid; grid-template-columns: 1fr 310px; gap: 60px; align-items: center; padding: 56px 0 42px; }
+.ballot-kicker { display: flex; align-items: center; gap: 10px; font-size: 9px; letter-spacing: 2.5px; color: #87c9c8; }
+.ballot-kicker span { height: 6px; width: 6px; border-radius: 50%; background: #72d8ce; box-shadow: 0 0 12px #72d8ce70; }
+.ballot-intro h1 { font-size: clamp(30px, 3.3vw, 46px); font-weight: 500; line-height: 1.17; letter-spacing: -1.7px; margin: 22px 0 18px; }
+.ballot-intro h1 em { font-family: Georgia, serif; font-weight: 400; color: #ecd3a3; }
+.ballot-description { color: #97aeb5; font-size: 13px; line-height: 1.8; max-width: 460px; }
+.ballot-progress { padding: 22px; border: 1px solid #ffffff14; border-radius: 18px; background: linear-gradient(130deg, #ffffff08, #ffffff02); }
+.ballot-progress-top { display: flex; align-items: center; justify-content: space-between; }
+.ballot-progress-top > span { font-size: 9px; letter-spacing: 2px; color: #a9b9bd; }
+.ballot-progress-top strong { font: 28px Georgia, serif; color: #f3dfb8; }
+.ballot-progress-top small { font: 12px Arial, sans-serif; color: #8fa2a8; }
+.ballot-track { height: 4px; background: #ffffff10; border-radius: 4px; margin: 16px 0 12px; overflow: hidden; }
+.ballot-track > div { height: 100%; background: linear-gradient(90deg, #61cabc, #edd4a3); transition: width .5s ease; }
+.ballot-progress p { font-size: 10px; color: #9cb0b7; line-height: 1.5; }
+.ballot-summary { display: flex; justify-content: space-between; background: #edd4a3; color: #18282c; font-size: 12px; font-weight: 700; padding: 12px 14px; border-radius: 8px; margin-top: 17px; transition: background .2s; }
+.ballot-summary:hover { background: #ffe8be; }
+.ballot-progress-note { display: block; font-size: 9px; color: #93a6ae; text-align: center; margin-top: 10px; }
+.ballot-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 0 23px; }
+.ballot-filters { display: flex; gap: 5px; flex-wrap: wrap; }
+.ballot-filters button { padding: 10px 13px; border-radius: 8px; color: #a2b6bb; font-size: 11px; cursor: pointer; transition: background .2s, color .2s; }
+.ballot-filters button[aria-pressed=true] { background: #e7d2aa; color: #132b32; }
+.ballot-filters button:hover:not([aria-pressed=true]) { background: #ffffff0c; color: white; }
+.ballot-filters button span { display: inline-block; margin-left: 9px; font-size: 9px; opacity: .65; }
+.ballot-continue { font-size: 11px; color: #c1d5d7; }
+.ballot-continue span { color: #e7d2aa; margin-left: 10px; }
+.ballot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 17px; }
+.ballot-card { position: relative; display: flex; flex-direction: column; border: 1px solid #ffffff12; border-radius: 16px; padding: 23px; background: linear-gradient(145deg, #132c35, #0b2029); overflow: hidden; transition: transform .25s, border-color .25s, box-shadow .25s; animation: ballot-arrive .5s both; animation-delay: var(--card-delay, 0ms); }
+.ballot-card::before { content: ''; pointer-events: none; position: absolute; width: 200px; height: 200px; top: -110px; right: -70px; border-radius: 50%; background: #5bddcb0a; filter: blur(25px); }
+.ballot-card:hover { transform: translateY(-5px); border-color: #afc6b264; box-shadow: 0 16px 35px #0004; }
+.ballot-card.is-selected { border-color: #6eceba65; background: linear-gradient(145deg, #14362f, #0c252b); }
+.ballot-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 23px; }
+.ballot-icon { color: #d8c7a3; }
+.ballot-status { font-size: 9px; letter-spacing: 1px; color: #8ca6ae; }
+.ballot-status.complete { color: #8de3ca; letter-spacing: .4px; }
+.ballot-card-copy h2 { font-size: 16px; letter-spacing: -.3px; font-weight: 600; }
+.ballot-card-copy p { color: #99aeb5; font-size: 11px; line-height: 1.6; margin-top: 7px; min-height: 35px; }
+.ballot-portraits { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin: 19px 0; }
+.ballot-portrait { position: relative; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: linear-gradient(145deg, #34525a, #1c333f); overflow: hidden; color: #d2c4a7; font: 20px Georgia, serif; }
+.ballot-portrait img { height: 100%; width: 100%; object-fit: cover; transition: transform .4s, filter .4s; filter: saturate(.8); }
+.ballot-card:hover .ballot-portrait img { transform: scale(1.08); filter: saturate(1.1); }
+.ballot-portrait.is-empty { border: 1px dashed #ffffff20; background: #ffffff03; color: #819ca5; font: 22px Arial, sans-serif; }
+.ballot-portrait .ballot-portrait-name { position: absolute; inset: auto 0 0; padding: 14px 3px 4px; background: linear-gradient(transparent, #000d); font: 8px Arial, sans-serif; color: white; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ballot-card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-top: 1px solid #ffffff0d; padding-top: 14px; margin-top: auto; font-size: 10px; color: #afc1c4; }
+.ballot-choice-label { display: block; color: #84d8c0; font-size: 8px; letter-spacing: 1px; margin-bottom: 4px; }
+.ballot-arrow { display: flex; align-items: center; justify-content: center; width: 29px; height: 29px; flex-shrink: 0; border: 1px solid #ffffff18; border-radius: 50%; color: #ead6b2; font-size: 17px; transition: background .2s, color .2s; }
+.ballot-card:hover .ballot-arrow { background: #e7d2aa; color: #132b32; }
+.ballot-featured { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr; column-gap: 60px; background: radial-gradient(ellipse at 90% 20%, #a88c4524, transparent 65%), linear-gradient(130deg, #243537, #132a31); border-color: #e0bf7740; padding: 26px 32px; }
+.ballot-featured .ballot-card-top { grid-column: 1; margin-bottom: 15px; }
+.ballot-featured .ballot-card-copy { grid-column: 1; }
+.ballot-featured h2 { font: 32px Georgia, serif; color: #f1d5a1; text-transform: none; }
+.ballot-featured .ballot-portraits { grid-column: 2; grid-row: 1 / 4; align-self: center; margin: 0; gap: 10px; }
+.ballot-featured .ballot-card-bottom { grid-column: 1; border-top: 0; padding-top: 5px; }
+.ballot-featured .ballot-status { color: #d7bb83; }
+.ballot-footer { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-top: 36px; padding: 25px 0 30px; border-top: 1px solid #ffffff12; color: #8ba3ac; font-size: 10px; }
+.ballot-footer > span { font-size: 9px; letter-spacing: 1.5px; color: #bdc3b4; }
+.ballot-footer b { margin-left: 9px; color: #d6bc88; }
+.ballot-footer a { color: #e1cda5; }
+.ballot-empty { padding: 60px 20px; text-align: center; border: 1px dashed #ffffff25; border-radius: 16px; }
+.ballot-empty h2 { font: 27px Georgia, serif; color: #ecd3a3; }
+.ballot-empty p { margin-top: 15px; font-size: 13px; color: #a3b6bc; }
+.ballot-empty button { margin-top: 22px; cursor: pointer; color: #88dfd2; font-size: 12px; }
+.ballot-page :is(a, button):focus-visible { outline: 2px solid #ead5a7; outline-offset: 5px; }
+@keyframes ballot-arrive { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 1000px) { .ballot-intro { gap: 30px; grid-template-columns: 1fr 275px; } .ballot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ballot-featured { gap: 25px; } .ballot-featured h2 { font-size: 26px; } }
+@media (max-width: 640px) {
+  .ballot-shell { padding: 0 20px; }
+  .ballot-nav { padding: 22px 0; }
+  .ballot-brand { font-size: 24px; }
+  .ballot-home { font-size: 10px; }
+  .ballot-home span { margin-left: 3px; }
+  .ballot-intro { grid-template-columns: 1fr; padding: 32px 0 25px; gap: 24px; }
+  .ballot-intro h1 { font-size: 32px; }
+  .ballot-kicker { font-size: 8px; letter-spacing: 1.5px; }
+  .ballot-progress { padding: 20px; }
+  .ballot-toolbar { align-items: flex-start; flex-direction: column; }
+  .ballot-filters { width: 100%; justify-content: space-between; gap: 0; }
+  .ballot-filters button { padding: 10px; font-size: 10px; }
+  .ballot-filters button span { margin-left: 5px; }
+  .ballot-grid { grid-template-columns: 1fr; }
+  .ballot-card { padding: 22px; }
+  .ballot-featured { display: flex; gap: 0; }
+  .ballot-featured .ballot-portraits { margin: 19px 0; align-self: stretch; }
+  .ballot-featured .ballot-card-bottom { border-top: 1px solid #ffffff0d; padding-top: 14px; }
+  .ballot-footer { flex-wrap: wrap; line-height: 1.6; }
+  .ballot-footer p { order: 3; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .ballot-card, .ballot-card *, .ballot-track > div { animation: none; transition: none; } .ballot-card:hover { transform: none; } }
+
+/* Nominee pages share the ballot's teal and gold theme. */
+.nominee-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding: 42px 0 30px; }
+.nominee-heading h1 { margin-top: 18px; color: #eed9b1; font: 38px Georgia, serif; letter-spacing: -.8px; }
+.nominee-heading-description { color: #a3b8bf; font-size: 12px; line-height: 1.7; margin-top: 12px; }
+.nominee-navigation { display: flex; gap: 10px; flex-shrink: 0; }
+.gala-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 43px; padding: 11px 15px; border: 1px solid transparent; border-radius: 9px; font-size: 11px; font-weight: 600; line-height: 1.4; cursor: pointer; transition: background .2s, color .2s, border-color .2s, transform .2s; }
+.gala-button > span { font-size: 16px; font-weight: 400; }
+.gala-button:hover { transform: translateY(-2px); }
+.gala-primary { color: #142d32; background: #ecd3a3; border-color: #ecd3a3; }
+.gala-primary:hover { background: #ffe7b9; border-color: #ffe7b9; }
+.gala-secondary { color: #c2d3d6; border-color: #ffffff20; background: #ffffff04; }
+.gala-secondary:hover { color: #f3dfb8; background: #ffffff0b; border-color: #ecd3a360; }
+.gala-channel { color: #9cdbd4; border-color: #78c9c530; background: #6dc9be08; }
+.gala-channel:hover { color: #c2fff1; border-color: #78c9c580; background: #6dc9be18; }
+.nominee-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.nominee-card { border: 1px solid #ffffff18; border-radius: 17px; overflow: hidden; background: linear-gradient(140deg, #18323b, #0c222a); transition: border-color .25s, transform .25s, box-shadow .25s; display: flex; flex-direction: column; }
+.nominee-card:hover { transform: translateY(-4px); border-color: #e5cc9c55; box-shadow: 0 15px 30px #0003; }
+.nominee-card.is-selected { border-color: #dfc48c; box-shadow: 0 0 0 1px #dfc48c40, 0 12px 35px #bfa76a12; }
+.nominee-image { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: #18303a; }
+.nominee-image::after { content: ''; position: absolute; inset: 65% 0 0; background: linear-gradient(transparent, #102630b0); pointer-events: none; }
+.nominee-image > img { width: 100%; height: 100%; object-fit: cover; transition: transform .45s; }
+.nominee-card:hover .nominee-image > img { transform: scale(1.035); }
+.nominee-number { position: absolute; top: 14px; left: 14px; display: flex; align-items: center; justify-content: center; width: 29px; height: 29px; border-radius: 50%; border: 1px solid #ffffff35; background: #031b27a0; color: #f1ddb7; font-size: 10px; backdrop-filter: blur(10px); }
+.nominee-badge { position: absolute; bottom: 14px; left: 14px; z-index: 1; padding: 8px 10px; border-radius: 6px; font-size: 9px; font-weight: 700; letter-spacing: 1px; background: #edd4a3; color: #153039; }
+.nominee-body { padding: 19px 16px 16px; flex: 1; display: flex; flex-direction: column; }
+.nominee-eyebrow { color: #9cafad; font-size: 8px; letter-spacing: 1.8px; }
+.nominee-body h2 { color: #f0f2ea; font-size: 19px; font-weight: 600; line-height: 1.3; margin: 8px 0 22px; overflow-wrap: anywhere; }
+.nominee-buttons { display: flex; gap: 7px; margin-top: auto; }
+.nominee-buttons .gala-primary { flex: 1; }
+.nominee-buttons .gala-button { padding: 10px 9px; font-size: 10px; gap: 6px; }
+.nominee-buttons .gala-primary[aria-pressed=true] { color: #a6ead9; background: #29554b; border-color: #78bfa175; }
+.nominee-pending { border-style: dashed; border-color: #ffffff20; background: #ffffff03; }
+.nominee-pending:hover { transform: none; box-shadow: none; }
+.nominee-pending-art { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 25px; background: radial-gradient(circle, #658e8d13, transparent 70%); }
+.nominee-pending-art > span:first-child { color: #acbdad; font: 80px Georgia, serif; opacity: .55; }
+.nominee-pending-art > span:last-child { font-size: 8px; letter-spacing: 2px; color: #87a0a5; }
+.nominee-pending .nominee-image { background: transparent; }
+.nominee-pending .nominee-body h2 { color: #bbcdce; }
+.nominee-pending-note { font-size: 11px; line-height: 1.6; color: #91a9b1; margin-top: auto; }
+.nominee-selection { display: flex; align-items: center; justify-content: space-between; gap: 20px; border: 1px solid #ffffff15; background: #ffffff04; border-radius: 14px; margin-top: 26px; padding: 20px; }
+.nominee-selection-text { display: flex; align-items: center; gap: 14px; }
+.nominee-selection-symbol { display: flex; align-items: center; justify-content: center; width: 37px; height: 37px; border-radius: 50%; flex-shrink: 0; border: 1px solid #d2bf8d40; color: #e5cca0; font-size: 23px; }
+.nominee-selection-symbol.has-selection { border-color: #87d9c445; color: #94e3cb; background: #87d9c40a; font-size: 16px; }
+.nominee-selection-text p { color: #d9e2e1; font-size: 12px; line-height: 1.6; }
+.nominee-selection-text strong { color: #eed7ab; }
+.nominee-selection-text div > span { display: block; font-size: 10px; color: #98adb4; margin-top: 4px; line-height: 1.6; }
+.nominee-selection-actions { display: flex; gap: 10px; flex-shrink: 0; }
+@media (max-width: 1100px) { .nominee-grid { gap: 14px; } .nominee-buttons { flex-direction: column; } .nominee-heading h1 { font-size: 32px; } }
+@media (max-width: 800px) { .nominee-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .nominee-heading { align-items: flex-start; flex-direction: column; } .nominee-selection { align-items: flex-start; flex-direction: column; } .nominee-buttons { flex-direction: row; } }
+@media (max-width: 480px) {
+  .nominee-heading { padding-top: 30px; }
+  .nominee-heading h1 { font-size: 29px; }
+  .nominee-grid { grid-template-columns: 1fr; gap: 22px; }
+  .nominee-navigation { width: 100%; }
+  .nominee-navigation .gala-button { flex: 1; padding: 10px; }
+  .nominee-body { padding: 20px; }
+  .nominee-buttons .gala-button { min-height: 45px; font-size: 12px; }
+  .nominee-selection { padding: 17px; }
+  .nominee-selection-actions { width: 100%; flex-wrap: wrap; }
+  .nominee-selection-actions .gala-button { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .nominee-card, .nominee-image > img, .gala-button { transition: none; } .nominee-card:hover, .nominee-card:hover .nominee-image > img, .gala-button:hover { transform: none; } }
+
+.chaparritas-mark { position: fixed; top: 20px; left: 20px; z-index: 30; display: block; width: 50px; height: 50px; }
+.chaparritas-mark img { width: 100%; height: 100%; object-fit: contain; }
+@media (max-width: 1430px) {
+  .ballot-page .ballot-nav { padding-left: 65px; }
+  .chaparritas-mark { position: absolute; top: 23px; left: max(20px, calc((100vw - 1280px) / 2 + 40px)); width: 42px; height: 42px; }
+}
+@media (max-width: 640px) {
+  .ballot-page .ballot-nav { padding-left: 46px; gap: 10px; }
+  .chaparritas-mark { left: 18px; top: 24px; width: 34px; height: 34px; }
+  .ballot-page .ballot-brand { font-size: 21px; }
+  .ballot-page .ballot-brand span { font-size: 8px; letter-spacing: 2px; }
+  .ballot-page .ballot-home { max-width: 85px; text-align: right; line-height: 1.5; }
+}
+
+.nominee-logo-image { background: radial-gradient(circle, #36505b, #142b35); }
+.nominee-logo-image > img { object-fit: contain; padding: 18px; }
+.nominee-logo-image::after { display: none; }
