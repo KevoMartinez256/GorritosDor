@@ -8,7 +8,7 @@ type Nominee = {
   display_name: string
   avatar_url: string | null
   twitch_login?: string | null
-  ext?: { platform?: string | null; channel_url?: string | null; position?: number; image_fit?: 'contain' | 'cover'; image_position?: string }
+  ext?: { platform?: string | null; channel_url?: string | null; position?: number; image_fit?: 'contain' | 'cover'; image_position?: string; credits?: { name: string; url?: string }[] }
 }
 type Category = { id: string; name: string; position: number; nominees: Nominee[] }
 
@@ -43,6 +43,7 @@ export default function CategoryClient({ editionId, slug, category }: { editionI
               <div className="nominee-body">
                 <p className="nominee-eyebrow">NOMINADO / {slug}</p>
                 <h2>{nominee.display_name}</h2>
+                {!!nominee.ext?.credits?.length && <p className="nominee-credit">Por {nominee.ext.credits.map((credit, i) => <span key={`${credit.name}-${i}`}>{i > 0 && ' y '}{credit.url && /^https:\/\//i.test(credit.url) ? <a href={credit.url} target="_blank" rel="noopener noreferrer">{credit.name} <span aria-hidden="true">↗</span></a> : credit.name}</span>)}</p>}
                 <div className="nominee-buttons">
                   <button type="button" className="gala-button gala-primary" aria-pressed={isSelected} aria-label={`Seleccionar a ${nominee.display_name}`} onClick={() => setChoice(category.id, nominee.id)}>
                     {isSelected ? 'Seleccionado' : 'Seleccionar'} <span aria-hidden="true">{isSelected ? '✓' : '+'}</span>

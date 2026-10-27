@@ -1,129 +1,54 @@
-﻿'use client'
+'use client'
 import Link from 'next/link'
 import { useChoices } from '@/hooks/useChoices'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import VoteShare from '@/components/VoteShare'
+import type { PosterEntry } from '@/lib/vote-poster'
 
-type Nominee = { id: string; display_name: string; avatar_url: string | null }
-type Category = { id: string; name: string; nominees: Nominee[] }
-
-export default function SummaryClient({
-  editionId,
-  slug,
-  categories,
-}: {
-  editionId: string
-  slug: string
-  categories: Category[]
-}) {
-  const { choices, clearAll } = useChoices(editionId)
-  const [busy, setBusy] = useState(false)
-
-  const chosenCats = useMemo(
-    () => categories.filter((c) => choices[c.id]),
-    [categories, choices]
-  )
-
-  const submitAll = async () => {
-    if (!chosenCats.length) return
-    setBusy(true)
-    try {
-      for (const c of chosenCats) {
-        const nomineeId = choices[c.id]
-        const res = await fetch('/vote/api/vote', {
-          method: 'POST',
-          body: JSON.stringify({ editionId, categoryId: c.id, nomineeId }),
-        })
-        if (!res.ok) {
-          const e = await res.json().catch(() => ({}))
-          alert(`Error en ${c.name}: ${e.error ?? res.statusText}`)
-          setBusy(false)
-          return
-        }
+type Category={id:string;name:string;nominees:PosterEntry['nominee'][]}
+export default function SummaryClient({editionId,slug,categories}:{editionId:string;slug:string;categories:Category[]}) {
+  const {choices,clearAll}=useChoices(editionId)
+  const [saved,setSaved]=useState<Record<string,string>>({})
+  const [loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[needsLogin,setNeedsLogin]=useState(false)
+  const readVotes=useCallback(async()=>{
+    const res=await fetch(`/api/my-votes?edition=${encodeURIComponent(editionId)}`,{cache:'no-store',signal:AbortSignal.timeout(15000)})
+    const data=await res.json()
+    setNeedsLogin(res.status===401)
+    if(!res.ok)throw new Error(data.error??'No pudimos comprobar tus votos.')
+    setSaved(data.choices)
+    return data.choices as Record<string,string>
+  },[editionId])
+  useEffect(()=>{let alive=true;readVotes().catch(e=>{if(alive)setError(e instanceof Error?e.message:'No pudimos consultar tus votos.')}).finally(()=>{if(alive)setLoading(false)});return()=>{alive=false}},[readVotes])
+  const pending=categories.filter(c=>choices[c.id]&&!saved[c.id]&&c.nominees.some(n=>n.id===choices[c.id]))
+  const entries=useMemo(()=>categories.flatMap(c=>{const nominee=c.nominees.find(n=>n.id===saved[c.id]);return nominee?[{category:c.name,nominee}]:[]}),[categories,saved])
+  async function refresh(){setLoading(true);setError('');try{await readVotes()}catch(e){setError(e instanceof Error?e.message:'No pudimos comprobar tus votos.')}finally{setLoading(false)}}
+  async function submitAll(){
+    if(!pending.length||busy)return
+    setBusy(true);setError('');setMessage('')
+    let failure=''
+    try{
+      for(const c of pending){
+        const res=await fetch('/vote/api/vote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({categoryId:c.id,nomineeId:choices[c.id]}),signal:AbortSignal.timeout(20000)})
+        // An existing vote is read back from the server; never replace it with this draft.
+        if(!res.ok&&res.status!==409){const data=await res.json().catch(()=>({}));failure=`${c.name}: ${data.error??'No se pudo guardar el voto.'}`;break}
       }
-      alert('¡Votos enviados!')
-      clearAll()
-    } finally {
-      setBusy(false)
-    }
+    }catch{failure='Se interrumpió la conexión. Los votos que ya se guardaron se conservan.'}
+    try{
+      const confirmed=await readVotes()
+      const remaining=pending.some(c=>!confirmed[c.id])
+      if(!remaining){clearAll();setMessage('¡Tus votos están guardados! Ya puedes descargar tu imagen.')}
+      else setError(failure||'Quedan votos por enviar. Puedes reintentar; no se duplicarán los ya guardados.')
+    }catch{setError(`${failure?failure+' ':''}No pudimos confirmar todos tus votos. Pulsa “Actualizar mis votos” antes de reintentar.`)}
+    finally{setBusy(false)}
   }
-
-  if (!chosenCats.length) {
-    return (
-      <div className="space-y-4">
-        <div className="text-neutral-400">
-          No tienes selecciones aún. Ve al{' '}
-          <Link className="underline" href={`/vote/${slug}`}>
-            menú de categorías
-          </Link>{' '}
-          y elige algunas.
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="space-y-8">
-      {/* Grid de tarjetas tipo “seleccionado” */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {chosenCats.map((c) => {
-          const n = c.nominees.find((nm) => nm.id === choices[c.id])
-          return (
-            <div
-              key={c.id}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-purple-500 bg-neutral-900"
-            >
-              {/* Poster con alto consistente */}
-              <div className="aspect-[4/5] w-full overflow-hidden">
-                <img
-                  src={n?.avatar_url || '/nominee-placeholder.svg'}
-                  alt={n?.display_name ?? ''}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-
-              {/* Contenido */}
-              <div className="flex min-h-28 flex-col p-4">
-                <div className="text-sm text-neutral-400 leading-tight truncate" title={c.name}>
-                  {c.name}
-                </div>
-                <div className="text-base font-semibold truncate" title={n?.display_name}>
-                  {n?.display_name}
-                </div>
-
-                <div className="mt-auto flex items-center">
-                  <Link
-                    href={`/vote/${slug}/category/${c.id}`}
-                    className="w-full rounded-xl px-3 py-2 text-sm bg-neutral-800 hover:bg-neutral-700 text-center"
-                  >
-                    Cambiar
-                  </Link>
-                </div>
-              </div>
-
-              {/* Marca visual */}
-              <div className="pointer-events-none absolute inset-0 ring-2 ring-purple-500/70 rounded-2xl" />
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Acciones inferiores */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <button
-          onClick={submitAll}
-          disabled={busy}
-          className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-500 disabled:opacity-50"
-        >
-          {busy ? 'Enviando…' : `Enviar ${chosenCats.length} voto(s)`}
-        </button>
-        <Link
-          href={`/vote/${slug}`}
-          className="px-4 py-2 rounded-xl bg-neutral-800 hover:bg-neutral-700"
-        >
-          Regresar al menú
-        </Link>
-      </div>
-    </div>
-  )
+  return <>
+    <p className="receipt-copy">Puedes votar solo en las categorías que quieras y volver después por las demás. Tu imagen incluirá únicamente los votos guardados.</p>
+    {loading&&<p role="status" className="receipt-notice">Consultando tus votos…</p>}
+    {error&&<div role="alert" className="receipt-notice">{error}{needsLogin&&<p><a href="/auth/login" className="receipt-button">Conectar con Twitch</a></p>}</div>}
+    {message&&<p role="status" className="receipt-notice">{message}</p>}
+    {!loading&&pending.length>0&&<section className="receipt-review"><div><div className="receipt-section-title"><h2>Tu selección</h2><span>{pending.length} {pending.length===1?'categoría':'categorías'} por enviar</span></div><div className="receipt-drafts">{pending.map((c,index)=>{const n=c.nominees.find(n=>n.id===choices[c.id])!;return <article className="receipt-draft" key={c.id}><div className="receipt-portrait"><img src={n.avatar_url||'/nominee-placeholder.svg'} alt={n.display_name} style={{objectFit:n.ext?.image_fit==='contain'?'contain':'cover',objectPosition:n.ext?.image_position??'center'}} /><span className="receipt-card-number">{String(index+1).padStart(2,'0')}</span><span className="receipt-card-status">✓ Tu elección</span></div><div className="receipt-card-body"><small>{c.name.replace(/\?$/,'')}</small><h3>{n.display_name}</h3>{!busy&&<Link className="receipt-button" href={`/vote/${slug}/category/${c.id}`}>Cambiar elección <span aria-hidden="true">↗</span></Link>}</div></article>})}</div></div><aside className="receipt-send"><p className="receipt-eyebrow">LISTO PARA ENVIAR</p><div className="receipt-total"><strong>{pending.length}</strong><span>{pending.length===1?'voto pendiente':'votos pendientes'}</span></div><div className="receipt-send-rule"/><p>Estos son los nominados que elegiste. Puedes cambiarlos antes de confirmar.</p><button className="receipt-button gold" onClick={submitAll} disabled={busy||loading||!!error}>{busy?'Guardando votos…':`Confirmar y enviar ${pending.length} ${pending.length===1?'voto':'votos'}`}<span aria-hidden="true">↗</span></button><small>Al enviarlos, tus votos quedan registrados.</small><div className="receipt-share-hint"><span aria-hidden="true">✦</span><p>Después podrás descargar una imagen con tus votos y compartirla.</p></div></aside></section>}
+    {entries.length>0&&<><section className="receipt-confirmed"><h2>Mis votos guardados · {entries.length}</h2><ul>{entries.map(e=><li key={e.category}><span>{e.category.replace(/\?$/,'')}</span><strong>{e.nominee.display_name}</strong></li>)}</ul></section><VoteShare key={entries.map(e=>e.nominee.id).join(',')} entries={entries} slug={slug}/></>}
+    {!loading&&!error&&!pending.length&&!entries.length&&<p className="receipt-notice">Todavía no tienes votos guardados ni selecciones pendientes. Elige tus favoritos en el menú.</p>}
+    <div className="receipt-actions"><Link className="receipt-button" href={`/vote/${slug}`}>Volver a las categorías</Link><button className="receipt-button" onClick={refresh} disabled={busy||loading}>Actualizar mis votos</button></div>
+  </>
 }
-
