@@ -61,6 +61,15 @@ export default function InstagramStudio({ categories, edition }: { categories: C
           else { ctx.fillStyle='#b8c6bd'; textFit(ctx,n ? n.display_name.slice(0,2).toUpperCase() : '?',x+w/2,y+(cardH-66)/2+25,w-40,80,true) }
           ctx.fillStyle='#09232c'; ctx.fillRect(x,y+cardH-66,w,66)
           ctx.fillStyle=n ? '#f1f4ee' : '#9cbdc1'; textFit(ctx,n?.display_name ?? 'Por anunciar',x+w/2,y+cardH-24,w-32,30)
+          const authors = /^(SERIE|EVENTO)$/i.test(category!.name.trim()) ? n?.ext?.credits?.map(c => c.name).filter(Boolean).join(' y ') : ''
+          if (authors) {
+            const credit = `Por: ${authors}`
+            ctx.font='600 20px Arial'
+            const tabW=Math.min(w-32,ctx.measureText(credit).width+32),tabH=38
+            const tabX=x+(w-tabW)/2,tabY=y+cardH-66-tabH-12
+            ctx.fillStyle='#eed5a0'; ctx.beginPath(); ctx.roundRect(tabX,tabY,tabW,tabH,9); ctx.fill()
+            ctx.fillStyle='#09232c'; textFit(ctx,credit,x+w/2,tabY+26,tabW-24,20)
+          }
           ctx.restore(); ctx.strokeStyle='#e3cb9135'; ctx.beginPath(); ctx.roundRect(x,y,w,cardH,20); ctx.stroke()
         })
         ctx.fillStyle='#eed5a0'; textFit(ctx,footer,540,h-(story ? 156 : 66),940,22)
