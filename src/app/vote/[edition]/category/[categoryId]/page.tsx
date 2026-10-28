@@ -1,4 +1,4 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClientServer } from '@/lib/supabaseClient'
 import CategoryClient from './category-client'
@@ -55,8 +55,8 @@ export default async function CategoryPage({
             <p className="nominee-heading-description">Conoce a los nominados. Elige quién merece este reconocimiento.</p>
           </div>
           <nav className="nominee-navigation" aria-label="Navegación de categorías">
-            {previousId && <Link href={`/vote/${slug}/category/${previousId}`} className="gala-button gala-secondary" rel="prev"><span aria-hidden="true">←</span> Anterior</Link>}
             <Link href={`/vote/${slug}`} className="gala-button gala-secondary"><span aria-hidden="true">←</span> Regresar al menú</Link>
+            {previousId && <Link href={`/vote/${slug}/category/${previousId}`} className="gala-button gala-secondary" rel="prev"><span aria-hidden="true">←</span> Anterior</Link>}
             {nextId && <Link href={`/vote/${slug}/category/${nextId}`} className="gala-button gala-primary">Siguiente <span aria-hidden="true">→</span></Link>}
           </nav>
         </section>
