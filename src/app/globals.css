@@ -253,3 +253,6 @@ body {
 .nominee-credit a { color: #eed5a0; text-decoration: underline; text-decoration-color: #eed5a044; text-underline-offset: 3px; }
 .nominee-credit a:hover { color: #fff1d2; text-decoration-color: currentColor; }
 .nominee-credit a:focus-visible { outline: 2px solid #eed5a0; outline-offset: 4px; }
+
+.nominee-navigation { flex-wrap: wrap; }
+@media (max-width: 600px) { .nominee-navigation .gala-button { flex: 1 1 auto; } }
