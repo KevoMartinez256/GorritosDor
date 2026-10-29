@@ -1,5 +1,6 @@
+import { categorySlug } from '@/lib/category-slug'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { createClientServer } from '@/lib/supabaseClient'
 import CategoryClient from './category-client'
 
@@ -18,25 +19,29 @@ export default async function CategoryPage({
   const edition = editions?.[0]
   if (!edition) return <div>Edición no encontrada.</div>
 
-  const { data: category } = await supabase
+  const { data: all, error } = await supabase
     .from('categories')
-    .select('id, name, position, nominees:nominees(id, display_name, avatar_url, twitch_login, ext)')
-    .eq('id', categoryId)
-    .eq('edition_id', edition.id)
-    .limit(1).single()
-
-  if (!category) notFound()
-
-  // Navegación en el orden de las categorías de esta edición.
-  const { data: all } = await supabase
-    .from('categories')
-    .select('id, position')
+    .select('id, name, position')
     .eq('edition_id', edition.id)
     .order('position', { ascending: true })
+  if (error) throw error
+  const match = all?.find(c => c.id === categoryId || categorySlug(c.name) === categoryId)
+  if (!match) notFound()
+  const canonicalSlug = categorySlug(match.name)
+  if (categoryId !== canonicalSlug) redirect(`/vote/${slug}/category/${canonicalSlug}`)
 
-  const idx = all?.findIndex(c => c.id === categoryId) ?? -1
-  const previousId = idx > 0 && all ? all[idx - 1].id : null
-  const nextId = idx >= 0 && all && idx + 1 < all.length ? all[idx + 1].id : null
+  const { data: category, error: categoryError } = await supabase
+    .from('categories')
+    .select('id, name, position, nominees:nominees(id, display_name, avatar_url, twitch_login, ext)')
+    .eq('id', match.id)
+    .eq('edition_id', edition.id)
+    .single()
+  if (categoryError) throw categoryError
+  if (!category) notFound()
+
+  const idx = all!.findIndex(c => c.id === match.id)
+  const previousId = idx > 0 ? categorySlug(all![idx - 1].name) : null
+  const nextId = idx + 1 < all!.length ? categorySlug(all![idx + 1].name) : null
 
   return (
     <main className="ballot-page">

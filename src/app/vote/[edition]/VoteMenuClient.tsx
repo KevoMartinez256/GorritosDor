@@ -1,4 +1,5 @@
 ﻿'use client'
+import { categorySlug } from '@/lib/category-slug'
 
 import Link from 'next/link'
 import { useChoices } from '@/hooks/useChoices'
@@ -69,7 +70,7 @@ export default function VoteMenuClient({ editionId, slug, categories }: { editio
             <button key={value} type="button" aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}<span>{count}</span></button>
           ))}
         </div>
-        {next && <Link className="ballot-continue" href={`/vote/${slug}/category/${next.id}`}>{selectedCount ? 'Continuar selección' : 'Comenzar selección'} <span aria-hidden="true">→</span></Link>}
+        {next && <Link className="ballot-continue" href={`/vote/${slug}/category/${categorySlug(next.name)}`}>{selectedCount ? 'Continuar selección' : 'Comenzar selección'} <span aria-hidden="true">→</span></Link>}
       </div>
       <div className="ballot-grid">
         {visible.map((category, index) => {
@@ -78,7 +79,7 @@ export default function VoteMenuClient({ editionId, slug, categories }: { editio
           const featured = category.name === 'STREAMER DEL AÑO'
           const waiting = nominees.length === 0
           return (
-            <Link key={category.id} href={`/vote/${slug}/category/${category.id}`} className={`ballot-card ${featured ? 'ballot-featured' : ''} ${selected ? 'is-selected' : ''}`} style={{ '--card-delay': `${index * 35}ms` } as CSSProperties}>
+            <Link key={category.id} href={`/vote/${slug}/category/${categorySlug(category.name)}`} className={`ballot-card ${featured ? 'ballot-featured' : ''} ${selected ? 'is-selected' : ''}`} style={{ '--card-delay': `${index * 35}ms` } as CSSProperties}>
               <div className="ballot-card-top"><span className="ballot-icon"><CategoryIcon name={category.name} /></span><span className={`ballot-status ${selected ? 'complete' : ''}`}>{selected ? '✓ Seleccionada' : waiting ? 'Por anunciar' : featured ? 'EL GRAN RECONOCIMIENTO' : `${String(category.position).padStart(2, '0')} / ${String(total).padStart(2, '0')}`}</span></div>
               <div className="ballot-card-copy"><h2>{category.name.replace(/\?$/, '')}</h2><p>{descriptions[category.name] ?? 'Descubre a los nominados de esta categoría.'}</p></div>
               <div className="ballot-portraits" aria-hidden="true">
