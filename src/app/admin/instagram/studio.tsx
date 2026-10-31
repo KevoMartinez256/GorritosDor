@@ -61,7 +61,7 @@ export default function InstagramStudio({ categories, edition }: { categories: C
           else { ctx.fillStyle='#b8c6bd'; textFit(ctx,n ? n.display_name.slice(0,2).toUpperCase() : '?',x+w/2,y+(cardH-66)/2+25,w-40,80,true) }
           ctx.fillStyle='#09232c'; ctx.fillRect(x,y+cardH-66,w,66)
           ctx.fillStyle=n ? '#f1f4ee' : '#9cbdc1'; textFit(ctx,n?.display_name ?? 'Por anunciar',x+w/2,y+cardH-24,w-32,30)
-          const authors = /^(SERIE|EVENTO)$/i.test(category!.name.trim()) ? n?.ext?.credits?.map(c => c.name).filter(Boolean).join(' y ') : ''
+          const authors = /^(SERIE|EVENTO|CLIP)$/i.test(category!.name.trim()) ? n?.ext?.credits?.map(c => c.name).filter(Boolean).join(' y ') : ''
           if (authors) {
             const credit = `Por: ${authors}`
             ctx.font='600 20px Arial'
