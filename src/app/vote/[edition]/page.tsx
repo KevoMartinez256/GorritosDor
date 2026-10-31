@@ -1,3 +1,4 @@
+import { guardVoting } from '@/lib/voting-access'
 ﻿import { createClientServer } from '@/lib/supabaseClient'
 import { notFound } from 'next/navigation'
 import VoteMenuClient from './VoteMenuClient'
@@ -9,6 +10,8 @@ export default async function VoteMenu({ params }: { params: Promise<{ edition: 
   const supabase = createClientServer()
   const { data: edition } = await supabase.from('editions').select('id, slug, title').eq('slug', slug).maybeSingle()
   if (!edition) notFound()
+  const access=await guardVoting(edition.id,slug)
+  if(!access.allowed)return <main className="ballot-page"><div className="ballot-shell"><h1>Gorritos D’or 2026</h1><p>{access.message}</p><a className="gala-button gala-primary" href="/">Volver al inicio</a></div></main>
   const { data: categories } = await supabase
     .from('categories')
     .select('id, name, position, nominees:nominees(id, display_name, avatar_url, ext)')

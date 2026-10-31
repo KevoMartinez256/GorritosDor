@@ -1,3 +1,4 @@
+import { guardVoting } from '@/lib/voting-access'
 import { categorySlug } from '@/lib/category-slug'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
@@ -19,6 +20,8 @@ export default async function CategoryPage({
   const edition = editions?.[0]
   if (!edition) return <div>Edición no encontrada.</div>
 
+  const access=await guardVoting(edition.id,slug)
+  if(!access.allowed)return <main className="ballot-page"><div className="ballot-shell"><h1>Gorritos D’or 2026</h1><p>{access.message}</p><a className="gala-button gala-primary" href="/">Volver al inicio</a></div></main>
   const { data: all, error } = await supabase
     .from('categories')
     .select('id, name, position')
