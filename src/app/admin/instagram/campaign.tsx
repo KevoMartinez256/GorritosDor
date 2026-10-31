@@ -146,7 +146,7 @@ export default function Campaign({ categories, year }: { categories: Category[];
     <label>Intensidad de las fotos<input type="range" min="10" max="80" value={opacity} onChange={e => setOpacity(Number(e.target.value))} /></label>
     {slide > 0 && <label>Reemplazar captura de este paso<input key={slide} type="file" accept="image/png,image/jpeg,image/webp" onChange={e => { const file = e.target.files?.[0]; if (file) setCapture(URL.createObjectURL(file)) }} /></label>}
     <p>1080 × 1350 px. El fondo usa las fotos originales de los nominados. Las capturas cargadas aquí se usan durante esta sesión.</p>
-    <button className="admin-button primary" disabled={busy || !preview} onClick={() => { const a = document.createElement('a'); a.href = preview; a.download = `gorritos-${year}-carrusel-${slide}${slide === 5 && !capture ? '-pendiente' : ''}.png`; a.click() }}>Descargar PNG ↓</button>
+    <button className="admin-button primary" disabled={busy || !preview} onClick={() => { const a = document.createElement('a'); a.href = preview; a.download = `gorritos-${year}-carrusel-${slide}.png`; a.click() }}>Descargar PNG ↓</button>
     <button className="admin-button" disabled={busy} onClick={() => setRetry(r => r + 1)}>Volver a cargar imágenes</button>
     <p role="status">{warning || 'La descarga incluye la imagen de la vista previa.'}</p>
   </section><section className="studio-preview" aria-busy={busy}>{preview && <img src={preview} alt={`Carrusel · ${slides[slide][0]}`} style={{ opacity: busy ? .4 : 1 }} />}{busy && <span className="studio-loading">Preparando…</span>}</section><canvas hidden ref={canvas} /></div>
