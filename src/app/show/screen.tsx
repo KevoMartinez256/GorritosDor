@@ -1,25 +1,8 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { tally } from '@/lib/admin-types'
 import type { ShowPayload } from '@/lib/show-types'
-
-function Film({ url, loop, muted, start, offset, onFinish }: { url: string; loop: boolean; muted: boolean; start?: string; offset: number; onFinish: () => void }) {
-  const ref = useRef<HTMLVideoElement>(null)
-  const [blocked, setBlocked] = useState(false)
-  const [failed, setFailed] = useState(false)
-  async function play() {
-    try { await ref.current?.play(); setBlocked(false) } catch { setBlocked(true) }
-  }
-  return <>{failed ? <div className="show-idle"><h1>Gorritos D’or</h1><p>Continuamos en un momento</p></div> : <video ref={ref} src={url} autoPlay muted={muted} loop={loop} playsInline preload="auto" onError={() => { setFailed(true); onFinish() }} onLoadedMetadata={() => {
-    const video = ref.current!
-    if (!loop && start && Number.isFinite(video.duration)) {
-      const elapsed = Math.max(0, (Date.now() + offset - Date.parse(start)) / 1000)
-      if (elapsed >= video.duration) { onFinish(); return }
-      video.currentTime = elapsed
-    }
-    void play()
-  }} onEnded={onFinish} />}{blocked && <button className="show-play" onClick={() => void play()}>Activar reproducción y audio ▶</button>}</>
-}
+import Film from './media'
 
 export default function Screen() {
   const [payload, setPayload] = useState<ShowPayload | null>(null)
@@ -57,7 +40,7 @@ export default function Screen() {
   const result = category ? tally(category, payload?.results?.counts ?? {}) : null
   return <main className="show-screen">
     {notice && <div className="show-idle"><h1>Gorritos D’or</h1><p>{notice}</p></div>}
-    {payload && videoUrl ? <Film key={`${payload.revision}-${mode}-${videoUrl}`} url={videoUrl} loop={mode === 'idle'} muted={muted} start={payload.startedAt} offset={offset} onFinish={() => { if (mode === 'video') setEnded(payload.revision) }} /> : payload && <>
+    {payload && videoUrl ? <Film key={`${payload.revision}-${mode}-${videoUrl}`} url={videoUrl} loop={mode === 'idle'} muted={muted || (payload.muted ?? false)} volume={payload.volume ?? 100} preview={muted} start={payload.startedAt} offset={offset} onFinish={() => { if (mode === 'video') setEnded(payload.revision) }} /> : payload && <>
       <header className="show-brand"><img src="/chaparritaspng.png" alt="Chaparritas" /><span>Gorritos D’or<small>AWARDS / 2026</small></span></header>
       {mode === 'idle' ? <div className="show-idle"><span className="show-kicker">LA COMUNIDAD ELIGE</span><h1>Gorritos D’or</h1><p>Una comunidad. Un año de momentos.</p><span className="show-spark">✦</span></div> : category && <section className={`show-content scene-${mode}`} key={`${payload.revision}-${mode}`}>
         <p className="show-kicker">{mode === 'category' ? 'EL TALENTO DE NUESTRA COMUNIDAD' : mode === 'winner' ? !result?.total ? 'SIN VOTOS · SIN GANADOR' : result.leaders.length > 1 ? 'EMPATE' : payload.results?.closed ? 'EL GANADOR ES' : 'LÍDER PROVISIONAL' : 'LA COMUNIDAD HA ELEGIDO'}</p>

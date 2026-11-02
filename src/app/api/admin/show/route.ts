@@ -39,14 +39,19 @@ export async function POST(request: Request) {
   if (body.action === 'config') {
     const candidate = body.config as ShowConfig
     if (!candidate || !validUrl(candidate.idle) || !candidate.videos || typeof candidate.videos !== 'object' || Array.isArray(candidate.videos) || Object.keys(candidate.videos).length > 100 || !Object.values(candidate.videos).every(validUrl)) return reply({ error: 'Usa enlaces HTTPS directos a archivos de video.' }, 400)
-    config = { idle: candidate.idle, videos: candidate.videos }
+    config = { ...config, idle: candidate.idle, videos: candidate.videos }
     payload.idleUrl = config.idle
+  } else if (body.action === 'audio') {
+    if (!Number.isInteger(body.volume) || body.volume < 0 || body.volume > 100 || typeof body.muted !== 'boolean') return reply({ error: 'El volumen debe estar entre 0 y 100.' }, 400)
+    config = { ...config, volume: body.volume, muted: body.muted }
+    payload.volume = body.volume
+    payload.muted = body.muted
   } else if (body.action === 'rotate') {
     token = crypto.randomUUID()
   } else if (body.action === 'scene') {
     const mode = body.mode as ShowMode
     if (!['idle', 'category', 'video', 'results', 'winner'].includes(mode)) return reply({ error: 'Escena inválida' }, 400)
-    payload = { mode, revision, idleUrl: config.idle, startedAt: new Date().toISOString() }
+    payload = { mode, revision, idleUrl: config.idle, volume: config.volume ?? 100, muted: config.muted ?? false, startedAt: new Date().toISOString() }
     if (mode !== 'idle') {
       if (typeof body.categoryId !== 'string') return reply({ error: 'Elige una categoría' }, 400)
       const { data: category } = await supabase.from('categories').select('id,name,position,nominees(id,display_name,avatar_url,ext)').eq('edition_id', edition.id).eq('id', body.categoryId).single()

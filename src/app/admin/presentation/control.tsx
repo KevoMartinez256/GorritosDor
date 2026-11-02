@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { checkVideoFile } from '@/lib/show-media'
 import type { Category } from '@/lib/admin-types'
 import type { ShowConfig, ShowMode, ShowState } from '@/lib/show-types'
 
@@ -13,6 +14,7 @@ export default function Control({ categories }: { categories: Category[] }) {
   const [message, setMessage] = useState('Cargando el control…')
   const [rotateConfirmed, setRotateConfirmed] = useState(false)
   const [winnerConfirmed, setWinnerConfirmed] = useState(false)
+  const [volume, setVolume] = useState(100)
   const category = categories[index]
   const link = state && origin ? `${origin}/show#${state.token}` : ''
   const dirty = !!state && JSON.stringify(config) !== JSON.stringify(state.config)
@@ -22,6 +24,7 @@ export default function Control({ categories }: { categories: Category[] }) {
     if (!res.ok) throw new Error(data.error)
     setState(data)
     setConfig(data.config)
+    setVolume(data.config.volume ?? 100)
     return data as ShowState
   }
   useEffect(() => {
@@ -40,6 +43,10 @@ export default function Control({ categories }: { categories: Category[] }) {
       }
       setState(data)
       if (body.action === 'config') setConfig(data.config)
+      if (body.action === 'audio') {
+        setVolume(data.config.volume ?? 100)
+        setConfig(current => ({ ...current, volume: data.config.volume, muted: data.config.muted }))
+      }
       setMessage(body.action === 'scene' ? 'Escena enviada a OBS.' : 'Cambios guardados.')
       setWinnerConfirmed(false)
       setRotateConfirmed(false)
@@ -52,6 +59,7 @@ export default function Control({ categories }: { categories: Category[] }) {
     setBusy(true)
     setMessage('Subiendo video… Mantén esta página abierta.')
     try {
+      await checkVideoFile(file)
       const res = await fetch('/api/admin/show/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: file.type, size: file.size }) })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -68,6 +76,10 @@ export default function Control({ categories }: { categories: Category[] }) {
     <p role="status" className="admin-panel">{message}</p>
     <div className="studio-grid"><section className="admin-panel studio-settings">
       <h2>Control de escenas</h2><label>Categoría<select disabled={busy} value={index} onChange={e => { setIndex(Number(e.target.value)); setWinnerConfirmed(false) }}>{categories.map((c, i) => <option value={i} key={c.id}>{String(i + 1).padStart(2, '0')} · {c.name}</option>)}</select></label>
+      <label>Volumen en OBS · {volume}%<input type="range" min="0" max="100" step="1" value={volume} disabled={busy || !state} onChange={e => setVolume(Number(e.target.value))} /></label>
+      <button className="admin-button" disabled={busy || !state || volume === (state.config.volume ?? 100)} onClick={() => void command({ action: 'audio', volume, muted: state?.config.muted ?? false })}>Aplicar volumen</button>
+      <button className="admin-button" aria-pressed={state?.config.muted ?? false} disabled={busy || !state} onClick={() => void command({ action: 'audio', volume, muted: !(state?.config.muted ?? false) })}>{state?.config.muted ? 'Activar sonido' : 'Silenciar video'}</button>
+      <p>El audio se aplica al idle y a los nominados. La vista previa está silenciada.</p>
       <p>La selección prepara la categoría. Los botones la muestran en OBS.</p>
       <button className="admin-button" disabled={busy || !state} onClick={() => scene('idle')}>01 · Idle / espera</button>
       <button className="admin-button" disabled={busy || !state} onClick={() => scene('category')}>02 · Mostrar categoría</button>
@@ -90,9 +102,9 @@ export default function Control({ categories }: { categories: Category[] }) {
       <p>Quien tenga el enlace podrá ver la escena proyectada. En un navegador normal puede ser necesario pulsar «Activar reproducción y audio».</p>
       <label><input type="checkbox" checked={rotateConfirmed} onChange={e => setRotateConfirmed(e.target.checked)} /> Quiero invalidar el enlace anterior</label><button className="admin-button" disabled={busy || !state || !rotateConfirmed} onClick={() => void command({ action: 'rotate' })}>Generar nuevo enlace</button>
     </section></div>
-    <section className="admin-panel studio-settings" style={{ marginTop: 24 }}><h2>Videos de la premiación</h2><p>Sube MP4 o WebM de hasta 50 MB, o pega la URL HTTPS directa del archivo. Para videos mayores puedes alojarlos externamente. Guarda antes de reproducir.</p>
-      <label>Idle general<input disabled={busy} value={config.idle} placeholder="https://…/idle.mp4" onChange={e => setConfig({ ...config, idle: e.target.value })} /></label><input aria-label="Subir idle" type="file" accept="video/mp4,video/webm" disabled={busy} onChange={e => { const file = e.target.files?.[0]; if (file) void upload(file, 'idle'); e.target.value = '' }} />
-      <label>Video de {category.name}<input disabled={busy} value={config.videos[category.id] ?? ''} placeholder="https://…/nominados.mp4" onChange={e => setConfig({ ...config, videos: { ...config.videos, [category.id]: e.target.value } })} /></label><input aria-label="Subir video de nominados" type="file" accept="video/mp4,video/webm" disabled={busy} onChange={e => { const file = e.target.files?.[0]; if (file) void upload(file, 'category'); e.target.value = '' }} />
+    <section className="admin-panel studio-settings" style={{ marginTop: 24 }}><h2>Videos de la premiación</h2><p>Sube MP4 o WebM de hasta 50 MB, o pega un enlace de YouTube o la URL HTTPS directa del archivo. Para videos mayores puedes alojarlos externamente. Guarda antes de reproducir.</p>
+      <label>Idle general<input disabled={busy} value={config.idle} placeholder="Enlace de YouTube o https://…/idle.mp4" onChange={e => setConfig({ ...config, idle: e.target.value })} /></label><input aria-label="Subir idle" type="file" accept="video/mp4,video/webm" disabled={busy} onChange={e => { const file = e.target.files?.[0]; if (file) void upload(file, 'idle'); e.target.value = '' }} />
+      <label>Video de {category.name}<input disabled={busy} value={config.videos[category.id] ?? ''} placeholder="Enlace de YouTube o https://…/nominados.mp4" onChange={e => setConfig({ ...config, videos: { ...config.videos, [category.id]: e.target.value } })} /></label><input aria-label="Subir video de nominados" type="file" accept="video/mp4,video/webm" disabled={busy} onChange={e => { const file = e.target.files?.[0]; if (file) void upload(file, 'category'); e.target.value = '' }} />
       <button className="admin-button primary" disabled={busy || !state || !dirty} onClick={() => void command({ action: 'config', config })}>Guardar videos{dirty ? ' · cambios pendientes' : ''}</button>
       <p>Videos configurados: {categories.filter(c => config.videos[c.id]).length} / {categories.length}. Si todavía no tienes idle, aparece la portada animada de los premios.</p>
     </section></>
