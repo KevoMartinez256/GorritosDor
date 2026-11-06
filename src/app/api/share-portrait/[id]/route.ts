@@ -7,10 +7,15 @@ export async function GET(_req: Request, {params}: {params: Promise<{id:string}>
   const {data:{user},error} = await supabase.auth.getUser()
   if(error || !user) return new Response('Inicia sesión',{status:401,headers})
   const {id} = await params
-  const {data} = await supabase.from('nominees').select('avatar_url').eq('id',id).maybeSingle()
-  if(!data?.avatar_url) return new Response('Sin imagen',{status:404,headers})
+  let avatar: unknown
+  if (id === 'self') avatar = user.user_metadata.avatar_url || user.user_metadata.picture
+  else {
+    const {data} = await supabase.from('nominees').select('avatar_url').eq('id',id).maybeSingle()
+    avatar = data?.avatar_url
+  }
+  if(typeof avatar !== 'string' || !avatar) return new Response('Sin imagen',{status:404,headers})
   try {
-    const url = new URL(data.avatar_url)
+    const url = new URL(avatar)
     if(url.protocol!=='https:' || !hosts.has(url.hostname) || url.port || url.username || url.password) return new Response('Imagen no permitida',{status:400,headers})
     const res = await fetch(url,{redirect:'error',signal:AbortSignal.timeout(10000),cache:'no-store'})
     const mime=res.headers.get('content-type')?.split(';')[0]??''

@@ -6,7 +6,12 @@ export default function VoteShare({entries,slug}:{entries:PosterEntry[];slug:str
   const [busy,setBusy]=useState(false),[url,setUrl]=useState(''),[error,setError]=useState(''),[notice,setNotice]=useState('')
   async function generate(){
     setBusy(true);setError('');setNotice('');setUrl('')
-    try {const result=await drawVotePoster(document.createElement('canvas'),entries,slug);setUrl(result.url);if(result.missing.length)setNotice(`No cargaron las fotos de ${result.missing.join(', ')}. Se muestran sus iniciales. Puedes volver a generar la imagen.`)}
+    try {
+      const response=await fetch('/api/share-profile',{cache:'no-store'})
+      if(!response.ok)throw new Error('No pudimos cargar tu perfil de Twitch. Vuelve a iniciar sesión o intenta de nuevo.')
+      const profile=await response.json()
+      const result=await drawVotePoster(document.createElement('canvas'),entries,slug,profile);setUrl(result.url);if(result.missing.length)setNotice(`No cargaron las fotos de ${result.missing.join(', ')}. Se muestran sus iniciales. Puedes volver a generar la imagen.`)
+    }
     catch(e){setError(e instanceof Error?e.message:'No pudimos crear tu imagen. Intenta de nuevo.')}
     finally{setBusy(false)}
   }

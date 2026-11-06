@@ -1,4 +1,5 @@
 export type PosterEntry = { category: string; nominee: { id:string; display_name:string; avatar_url:string|null; ext?:{image_fit?:string;image_position?:string}|null } }
+export type PosterProfile = { name: string; avatar: string | null }
 
 export function posterLayout(count: number) {
   if(count<1 || count>12) throw new Error('El diseño admite de 1 a 12 categorías.')
@@ -24,9 +25,9 @@ function fit(ctx:CanvasRenderingContext2D,text:string,x:number,y:number,w:number
   do {ctx.font=`${serif?'normal':'600'} ${size--}px ${serif?'Georgia':'Arial'}`}while(ctx.measureText(text).width>w && size>14)
   ctx.fillText(text,x,y)
 }
-export async function drawVotePoster(canvas:HTMLCanvasElement,entries:PosterEntry[],slug:string) {
+export async function drawVotePoster(canvas:HTMLCanvasElement,entries:PosterEntry[],slug:string,profile?:PosterProfile) {
   const layout=posterLayout(entries.length)
-  const [logo,...images]=await Promise.all([load('/chaparritaspng.png'),...entries.map(e=>e.nominee.avatar_url?load(e.nominee.avatar_url.startsWith('/nominees/')?e.nominee.avatar_url:`/api/share-portrait/${e.nominee.id}`):Promise.resolve(null))])
+  const [logo,avatar,...images]=await Promise.all([load('/chaparritaspng.png'),profile?.avatar?load(profile.avatar):Promise.resolve(null),...entries.map(e=>e.nominee.avatar_url?load(e.nominee.avatar_url.startsWith('/nominees/')?e.nominee.avatar_url:`/api/share-portrait/${e.nominee.id}`):Promise.resolve(null))])
   canvas.width=1080;canvas.height=1350
   const ctx=canvas.getContext('2d')
   if(!ctx) throw new Error('Tu navegador no pudo generar la imagen.')
@@ -37,8 +38,18 @@ export async function drawVotePoster(canvas:HTMLCanvasElement,entries:PosterEntr
   if(logo){const scale=Math.min(76/logo.width,98/logo.height);ctx.drawImage(logo,58,48,logo.width*scale,logo.height*scale)}
   ctx.textAlign='center';ctx.fillStyle='#eed5a0';fit(ctx,'Gorritos D’or',540,112,750,68,true)
   ctx.fillStyle='#a6c4c8';ctx.font='18px Arial';ctx.fillText(`A W A R D S  /  ${slug}`,540,152)
-  ctx.fillStyle='#7cd8cf';ctx.font='18px Arial';ctx.fillText('Y O  Y A  V O T É',540,216)
-  ctx.fillStyle='#eed5a0';fit(ctx,'Mi elección. Mi comunidad.',540,274,950,48,true)
+  ctx.fillStyle='#eed5a0';fit(ctx,'Mis votos',540,215,950,46,true)
+  if(profile) {
+    let size=32
+    do { ctx.font=`600 ${size--}px Arial` } while(ctx.measureText(profile.name).width>650 && size>14)
+    const nameWidth=ctx.measureText(profile.name).width
+    const left=(1080-nameWidth-84)/2
+    ctx.save();ctx.beginPath();ctx.arc(left+32,266,32,0,Math.PI*2);ctx.clip()
+    ctx.fillStyle='#25434b';ctx.fillRect(left,234,64,64)
+    if(avatar){const scale=Math.max(64/avatar.width,64/avatar.height);ctx.drawImage(avatar,left+(64-avatar.width*scale)/2,234+(64-avatar.height*scale)/2,avatar.width*scale,avatar.height*scale)}
+    else {ctx.fillStyle='#eed5a0';fit(ctx,profile.name.slice(0,1).toUpperCase(),left+32,277,50,30)}
+    ctx.restore();ctx.textAlign='left';ctx.fillStyle='#f1f5ed';ctx.font=`600 ${size+1}px Arial`;ctx.fillText(profile.name,left+84,277);ctx.textAlign='center'
+  } else {ctx.fillStyle='#eed5a0';fit(ctx,'Mi elección. Mi comunidad.',540,274,950,40,true)}
   entries.forEach((e,i)=>{
     const {x,y,w,h}=layout[i], img=images[i], n=e.nominee
     if(entries.length>4){
@@ -68,5 +79,5 @@ export async function drawVotePoster(canvas:HTMLCanvasElement,entries:PosterEntr
   })
   ctx.fillStyle='#eed5a0';ctx.font='21px Arial';ctx.fillText(`${entries.length} ${entries.length===1?'CATEGORÍA':'CATEGORÍAS'} · MI VOTO CELEBRA A LA COMUNIDAD`,540,1260)
   ctx.fillStyle='#9ab8be';ctx.font='17px Arial';ctx.fillText('LOS MOMENTOS QUEDAN. NOSOTROS LOS CELEBRAMOS.',540,1292)
-  return {url:canvas.toDataURL('image/png'),missing:entries.filter((e,i)=>e.nominee.avatar_url&&!images[i]).map(e=>e.nominee.display_name)}
+  return {url:canvas.toDataURL('image/png'),missing:[...entries.filter((e,i)=>e.nominee.avatar_url&&!images[i]).map(e=>e.nominee.display_name),...(profile?.avatar&&!avatar?['tu perfil de Twitch']:[])]}
 }
