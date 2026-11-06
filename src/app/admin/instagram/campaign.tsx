@@ -125,8 +125,11 @@ export default function Campaign({ categories, year }: { categories: Category[];
           ctx.beginPath()
           ctx.roundRect(70, 410, 940, 710, 22)
           ctx.stroke()
-          text(ctx, slides[slide][2], 1190, 27)
-          if (!screenshot) text(ctx, 'BORRADOR · AGREGA LA CAPTURA', 1233, 18, '#78d7d1')
+          if (slide === 5) {
+            text(ctx, 'Comparte tus resultados y etiqueta a', 1175, 27, '#f1f4ee')
+            text(ctx, '@kevolimpiadas_ y @chaparritastudios', 1218, 32)
+          } else text(ctx, slides[slide][2], 1190, 27)
+          if (!screenshot) text(ctx, 'BORRADOR · AGREGA LA CAPTURA', 1250, 18, '#78d7d1')
         }
         text(ctx, 'gorritos-dor.vercel.app', 1283, 25, '#a9c7ca')
         setPreview(node.toDataURL('image/png'))
