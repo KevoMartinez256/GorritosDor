@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import type { Category, Nominee } from '@/lib/admin-types'
+import type { Category } from '@/lib/admin-types'
+import { invitationPeople } from '@/lib/invitation-people'
 
 function loadImage(source: string): Promise<HTMLImageElement | null> {
   return new Promise(resolve => {
@@ -21,18 +22,8 @@ function drawText(context: CanvasRenderingContext2D, text: string, y: number, si
 }
 
 export default function Invitation({ categories, year }: { categories: Category[]; year: string }) {
-  const people = useMemo(() => {
-    const grouped = new Map<string, { nominee: Nominee; categories: string[] }>()
-    for (const category of categories) {
-      for (const nominee of category.nominees) {
-        const key = nominee.display_name.trim().toLowerCase()
-        const person = grouped.get(key) || { nominee, categories: [] }
-        person.categories.push(category.id)
-        grouped.set(key, person)
-      }
-    }
-    return [...grouped.values()].sort((a, b) => a.nominee.display_name.localeCompare(b.nominee.display_name))
-  }, [categories])
+  const people = useMemo(() => invitationPeople(categories), [categories])
+  const [customPhoto, setCustomPhoto] = useState('')
   const [selectedId, setSelectedId] = useState(people[0]?.nominee.id || '')
   const selected = people.find(person => person.nominee.id === selectedId)
   const [selectedCategories, setSelectedCategories] = useState(people[0]?.categories || [])
@@ -53,7 +44,9 @@ export default function Invitation({ categories, year }: { categories: Category[
           return
         }
         const nominee = selected.nominee
-        const source = nominee.avatar_url?.startsWith('/nominees/') ? nominee.avatar_url : `/api/admin/portrait/${nominee.id}`
+        const source = customPhoto || (selected.profileUrl
+          ? `/api/admin/invitation-portrait?id=${encodeURIComponent(nominee.id)}`
+          : nominee.avatar_url?.startsWith('/nominees/') ? nominee.avatar_url : `/api/admin/portrait/${nominee.id}`)
         const [photo, logo] = await Promise.all([loadImage(source), loadImage('/chaparritaspng.png')])
         if (cancelled) return
         const canvas = document.createElement('canvas')
@@ -110,7 +103,7 @@ export default function Invitation({ categories, year }: { categories: Category[
         context.fillStyle = '#a9c7ca'
         drawText(context, 'El modpack se compartirá unos días antes del evento.', 1270, 21)
         setPreview(canvas.toDataURL('image/png'))
-        if (!photo || !logo) setWarning('Alguna imagen no pudo cargar. Puedes volver a cargar las imágenes antes de descargar.')
+        if (!photo || !logo) setWarning('No se pudo obtener alguna imagen. Si la red social bloquea la foto, puedes cargarla abajo. Se muestran iniciales mientras tanto.')
       } catch {
         if (!cancelled) setWarning('No se pudo generar la invitación. Intenta de nuevo.')
       } finally {
@@ -119,19 +112,29 @@ export default function Invitation({ categories, year }: { categories: Category[
     }
     void render()
     return () => { cancelled = true }
-  }, [selected, selectedCategories, categories, year, retry])
+  }, [selected, selectedCategories, categories, year, retry, customPhoto])
 
   return <div className="studio-grid">
     <section className="admin-panel studio-settings">
       <label>Nominado<select value={selectedId} onChange={event => {
         setSelectedId(event.target.value)
+        setCustomPhoto('')
         setSelectedCategories(people.find(person => person.nominee.id === event.target.value)?.categories || [])
       }}>{people.map(person => <option key={person.nominee.id} value={person.nominee.id}>{person.nominee.display_name}</option>)}</select></label>
       <fieldset><legend>Categorías de la invitación</legend>
-        <p>Se seleccionan las nominaciones que coinciden con su nombre. Puedes añadir las de un proyecto o clip en el que participa.</p>
+        <p>Incluye automáticamente sus nominaciones y los proyectos o clips donde aparece como responsable.</p>
         {categories.map(category => <label key={category.id} style={{display:'flex', gap:10, alignItems:'center', marginBottom:10}}><input type="checkbox" style={{width:'auto'}} checked={selectedCategories.includes(category.id)} onChange={event => setSelectedCategories(current => event.target.checked ? [...current, category.id] : current.filter(id => id !== category.id))} />{category.name}</label>)}
       </fieldset>
       <p>Publicación vertical · 1080 × 1350</p>
+      {selected?.profileUrl && <a href={selected.profileUrl} target="_blank" rel="noreferrer">Ver perfil del responsable ↗</a>}
+      <label>Foto alternativa<input type="file" accept="image/png,image/jpeg,image/webp" onChange={event => {
+        const file = event.target.files?.[0]
+        if (!file) return
+        if (file.size > 8 * 1024 * 1024) { setWarning('La foto debe pesar menos de 8 MB.'); return }
+        const reader = new FileReader()
+        reader.onload = () => setCustomPhoto(String(reader.result))
+        reader.readAsDataURL(file)
+      }} /></label>
       {preview && !busy && <a className="admin-button primary" href={preview} download={`invitacion-${selected?.nominee.display_name.replace(/[^a-zA-Z0-9_-]/g, '-')}-${year}.png`}>Descargar PNG ↓</a>}
       <button className="admin-button" disabled={busy} onClick={() => setRetry(value => value + 1)}>Volver a cargar imágenes</button>
       <p role="status">{busy ? 'Preparando invitación…' : warning}</p>
