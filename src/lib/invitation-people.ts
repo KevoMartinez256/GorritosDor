@@ -42,6 +42,9 @@ export function invitationPeople(categories: Category[]): InvitationPerson[] {
       if (nominee.display_name === 'UHC by AnnCovers') {
         credits = [{ name: 'anncoveers', url: 'https://www.twitch.tv/anncoveers' }]
       }
+      if (nominee.display_name === 'Summer SMP') {
+        credits = [{ name: 'cylantrox', url: 'https://www.twitch.tv/cylantrox' }]
+      }
       for (const credit of credits) {
         const login = handle(credit.url)
         const key = aliases.get(identity(login)) || aliases.get(identity(credit.name)) || identity(login || credit.name)
@@ -59,6 +62,10 @@ export function invitationPeople(categories: Category[]): InvitationPerson[] {
             profileUrl: credit.url,
           }
           people.set(key, person)
+        }
+        if (login === 'cylantrox') {
+          person.nominee = { ...person.nominee, avatar_url: '/nominees/2026/authors/cylantrox.png' }
+          person.profileUrl = 'https://www.twitch.tv/cylantrox'
         }
         addCategory(person, category.id)
       }
