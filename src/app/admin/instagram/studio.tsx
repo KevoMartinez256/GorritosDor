@@ -1,6 +1,8 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import Campaign from './campaign'
+import VoterPoster from '../votes/voter-poster'
+import Invitation from './invitation'
 import type { Category, Edition, Nominee } from '@/lib/admin-types'
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -84,7 +86,11 @@ export default function InstagramStudio({ categories, edition }: { categories: C
     void render()
     return () => { cancelled = true }
   },[category,edition.slug,footer,format,retry,mode])
-  const tabs = <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}><button className="admin-button" aria-pressed={mode === 'nominees'} onClick={() => setMode('nominees')}>Nominados</button><button className="admin-button" aria-pressed={mode === 'campaign'} onClick={() => setMode('campaign')}>Anuncio y pasos</button></div>
+  const tabs = <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
+    {[['nominees','Nominados'],['campaign','Anuncio y pasos'],['voters','Votos de un usuario'],['invitation','Invitación a nominados']].map(([value,label]) => <button key={value} className="admin-button" aria-pressed={mode === value} onClick={() => setMode(value)}>{label}</button>)}
+  </div>
+  if (mode === 'voters') return <><p className="admin-eyebrow">ESTUDIO / INSTAGRAM</p><h1>Los votos de tu comunidad.</h1>{tabs}<VoterPoster /></>
+  if (mode === 'invitation') return <><p className="admin-eyebrow">ESTUDIO / INSTAGRAM</p><h1>Una invitación a celebrar.</h1>{tabs}<Invitation categories={categories} year={edition.slug} /></>
   if (mode === 'campaign') return <><p className="admin-eyebrow">ESTUDIO / INSTAGRAM</p><h1>Comparte la votación.<br /><em>Paso a paso.</em></h1>{tabs}<Campaign categories={categories} year={edition.slug} /></>
   return <><p className="admin-eyebrow">ESTUDIO / INSTAGRAM</p><h1>Cuatro nombres.<br /><em>Un gran reconocimiento.</em></h1>{tabs}<div className="studio-grid"><section className="admin-panel studio-settings"><label>Categoría<select value={categoryId} onChange={e=>setCategoryId(e.target.value)}>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label><label>Formato<select value={format} onChange={e=>setFormat(e.target.value)}><option value="1350">Publicación vertical · 1080 × 1350</option><option value="1080">Cuadrado · 1080 × 1080</option><option value="1920">Historia · 1080 × 1920</option></select></label><label>Texto inferior<input maxLength={90} value={footer} onChange={e=>setFooter(e.target.value)} /></label><p>Los nombres y fotografías vienen de los nominados de la categoría. Los lugares pendientes conservan su espacio.</p><button className="admin-button primary" disabled={busy || !preview} onClick={()=>{ const a=document.createElement('a');a.href=preview;a.download=`gorritos-${edition.slug}-${category?.name.toLowerCase().replace(/[^a-z0-9]+/g,'-')}-${format}.png`;a.click() }}>{busy ? 'Preparando imagen…' : 'Descargar PNG ↓'}</button><button className="admin-button" onClick={()=>setRetry(r=>r+1)} disabled={busy}>Volver a cargar imágenes</button><p role="status">{warning || 'La descarga incluye exactamente la imagen de la vista previa.'}</p></section><section className="studio-preview" aria-label="Vista previa de Instagram" aria-busy={busy}>{preview && <img src={preview} alt={`Publicación: ${category?.name}`} style={{ opacity:busy?.4:1 }} />}{busy && <span className="studio-loading">Preparando…</span>}</section></div><canvas ref={canvasRef} hidden /></>
 }
