@@ -44,9 +44,10 @@ export default function Invitation({ categories, year }: { categories: Category[
           return
         }
         const nominee = selected.nominee
-        const source = customPhoto || (selected.profileUrl
+        const localPhoto = nominee.avatar_url?.startsWith('/nominees/') ? nominee.avatar_url : ''
+        const source = customPhoto || localPhoto || (selected.profileUrl
           ? `/api/admin/invitation-portrait?id=${encodeURIComponent(nominee.id)}`
-          : nominee.avatar_url?.startsWith('/nominees/') ? nominee.avatar_url : `/api/admin/portrait/${nominee.id}`)
+          : `/api/admin/portrait/${nominee.id}`)
         const [photo, logo] = await Promise.all([loadImage(source), loadImage('/chaparritaspng.png')])
         if (cancelled) return
         const canvas = document.createElement('canvas')

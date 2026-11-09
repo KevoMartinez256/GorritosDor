@@ -33,8 +33,11 @@ export function invitationPeople(categories: Category[]): InvitationPerson[] {
   for (const category of categories.filter(item => projects.test(item.name))) {
     for (const nominee of category.nominees) {
       let credits: Credit[] = nominee.ext?.credits || []
-      if (nominee.display_name === 'Chapamon' || nominee.display_name === 'KevOlimpiadas Valorant 3') {
+      if (nominee.display_name === 'Chapamon') {
         credits = [{ name: 'ElNaiti_', url: 'https://www.twitch.tv/elnaiti_' }]
+      }
+      if (nominee.display_name === 'Paradise V' || nominee.display_name === 'KevOlimpiadas Valorant 3') {
+        credits = [{ name: 'don_kevo_', url: 'https://www.twitch.tv/don_kevo_' }]
       }
       if (nominee.display_name === 'UHC by AnnCovers') {
         credits = [{ name: 'anncoveers', url: 'https://www.twitch.tv/anncoveers' }]
@@ -45,7 +48,13 @@ export function invitationPeople(categories: Category[]): InvitationPerson[] {
         let person = people.get(key)
         if (!person) {
           person = {
-            nominee: { id: `author-${key}`, display_name: login || credit.name, avatar_url: null, ext: null },
+            nominee: {
+              id: `author-${key}`,
+              display_name: login || credit.name,
+              avatar_url: ['ekcorp_1', 'daliavisionn', 'elhalehhh'].includes(login)
+                ? `/nominees/2026/authors/${login}.jpg` : null,
+              ext: null,
+            },
             categories: [],
             profileUrl: credit.url,
           }
