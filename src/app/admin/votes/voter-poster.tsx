@@ -8,6 +8,11 @@ export default function VoterPoster(){
   e.preventDefault();if(busy)return;setBusy(true);setUrl('');setMessage('')
   try{
    const response=await fetch('/api/admin/voter-poster?username='+encodeURIComponent(username.trim()),{cache:'no-store',signal:AbortSignal.timeout(20000)})
+   if (!response.headers.get('content-type')?.includes('application/json')) {
+    throw Error(response.status === 404
+     ? 'Falta instalar la ruta de generación de imágenes. Sube la actualización completa y espera a que termine el despliegue.'
+     : 'El servidor no pudo responder. Recarga la página e intenta de nuevo.')
+   }
    const data=await response.json();if(!response.ok)throw Error(data.error)
    const result=await drawVotePoster(document.createElement('canvas'),data.entries,data.slug,data.profile)
    setName(data.profile.name);setUrl(result.url)
