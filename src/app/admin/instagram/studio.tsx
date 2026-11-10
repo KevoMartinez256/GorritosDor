@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import Campaign from './campaign'
 import VoterPoster from '../votes/voter-poster'
 import Invitation from './invitation'
+import HistoryCarousel from './history-carousel'
 import type { Category, Edition, Nominee } from '@/lib/admin-types'
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -87,8 +88,9 @@ export default function InstagramStudio({ categories, edition }: { categories: C
     return () => { cancelled = true }
   },[category,edition.slug,footer,format,retry,mode])
   const tabs = <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
-    {[['nominees','Nominados'],['campaign','Anuncio y pasos'],['voters','Votos de un usuario'],['invitation','Invitación a nominados']].map(([value,label]) => <button key={value} className="admin-button" aria-pressed={mode === value} onClick={() => setMode(value)}>{label}</button>)}
+    {[['nominees','Nominados'],['campaign','Anuncio y pasos'],['history','Recordatorio y datos curiosos'],['voters','Votos de un usuario'],['invitation','Invitación a nominados']].map(([value,label]) => <button key={value} className="admin-button" aria-pressed={mode === value} onClick={() => setMode(value)}>{label}</button>)}
   </div>
+  if (mode === 'history') return <><p className="admin-eyebrow">ESTUDIO / INSTAGRAM</p><h1>La historia de los Gorritos.</h1>{tabs}<HistoryCarousel categories={categories} year={edition.slug} /></>
   if (mode === 'voters') return <><p className="admin-eyebrow">ESTUDIO / INSTAGRAM</p><h1>Los votos de tu comunidad.</h1>{tabs}<VoterPoster /></>
   if (mode === 'invitation') return <><p className="admin-eyebrow">ESTUDIO / INSTAGRAM</p><h1>Una invitación a celebrar.</h1>{tabs}<Invitation categories={categories} year={edition.slug} /></>
   if (mode === 'campaign') return <><p className="admin-eyebrow">ESTUDIO / INSTAGRAM</p><h1>Comparte la votación.<br /><em>Paso a paso.</em></h1>{tabs}<Campaign categories={categories} year={edition.slug} /></>
