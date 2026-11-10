@@ -57,10 +57,14 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
           return loaded
         }
         const nominees = [...new Map(categories.flatMap(category => category.nominees).filter(nominee => nominee.avatar_url).map(nominee => [nominee.avatar_url, nominee])).values()]
-        const [photos, faces, logo] = await Promise.all([
+        const [photos, faces, logo, paradise] = await Promise.all([
           Promise.all(nominees.map(nominee => image(nominee.avatar_url!.startsWith('/nominees/') ? nominee.avatar_url! : `/api/admin/portrait/${nominee.id}`))),
           Promise.all(winners.map(winner => image(winner.photo || `/nominees/2026/history/${winner.login}.png`))),
           image('/chaparritaspng.png'),
+          slide === 2 ? Promise.all([
+            image('/nominees/2026/history/paradise3.jpg'),
+            image('/nominees/2026/history/paradise4.png'),
+          ]) : Promise.resolve([]),
         ])
         if (cancelled) return
         const canvas = document.createElement('canvas')
@@ -112,10 +116,10 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
           text(context, 'Tu elección también hace historia.', 540, 840, 32)
           context.fillStyle = '#eed5a0'
           text(context, '¿Quiénes tienen más Gorritos de Oro?', 540, 1020, 34, 940, true)
-          text(context, 'Desliza y descubre el dato curioso →', 540, 1080, 27)
+          text(context, 'Desliza y descubre los datos curiosos →', 540, 1080, 27)
           context.fillStyle = '#a9c7ca'
           text(context, 'Vota hasta el 11 de diciembre · 19:00 h CDMX', 540, 1205, 23)
-        } else {
+        } else if (slide === 1) {
           context.fillStyle = '#78d7d1'
           text(context, 'UN DATO CURIOSO', 540, 225, 23)
           context.fillStyle = '#eed5a0'
@@ -161,11 +165,48 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
           text(context, '¿Quién sumará otro este año? Tú eliges.', 540, 1190, 32, 940, true)
           context.fillStyle = '#f1f4ee'
           text(context, 'Las votaciones siguen abiertas.', 540, 1230, 24)
+        } else {
+          context.fillStyle = '#78d7d1'
+          text(context, 'CURIOSIDAD 2', 540, 240, 24)
+          context.fillStyle = '#eed5a0'
+          text(context, 'Paradise hizo historia', 540, 320, 66, 940, true)
+          context.fillStyle = '#f1f4ee'
+          text(context, 'La única serie en ganar el Gorrito a', 540, 395, 32)
+          text(context, 'Mejor Serie de Contenido', 540, 442, 38)
+          context.fillStyle = '#eed5a0'
+          text(context, 'dos años consecutivos.', 540, 496, 43, 940, true)
+          paradise.forEach((photo, index) => {
+            const x = 70 + index * 480
+            context.save()
+            context.beginPath()
+            context.roundRect(x, 560, 460, 430, 22)
+            context.clip()
+            context.fillStyle = '#12313b'
+            context.fillRect(x, 560, 460, 430)
+            if (photo) {
+              const scale = Math.min(420 / photo.width, 340 / photo.height)
+              context.drawImage(photo, x + (460 - photo.width * scale) / 2, 580 + (340 - photo.height * scale) / 2, photo.width * scale, photo.height * scale)
+            } else {
+              context.fillStyle = '#a9c7ca'
+              text(context, 'Imagen pendiente', x + 230, 760, 26, 420)
+            }
+            context.fillStyle = '#eed5a0'
+            text(context, index === 0 ? 'PARADISE III' : 'PARADISE IV', x + 230, 963, 32, 420, true)
+            context.restore()
+            context.strokeStyle = '#eed5a060'
+            context.beginPath()
+            context.roundRect(x, 560, 460, 430, 22)
+            context.stroke()
+          })
+          context.fillStyle = '#eed5a0'
+          text(context, '¿Se vendrá el tercero?', 540, 1100, 64, 940, true)
+          context.fillStyle = '#f1f4ee'
+          text(context, 'Tú eliges. No te olvides de votar.', 540, 1180, 30)
         }
         context.fillStyle = '#a9c7ca'
         text(context, 'gorritos-dor.vercel.app', 540, 1285, 25)
         setPreview(canvas.toDataURL('image/png'))
-        if (photos.some(photo => !photo) || faces.some(face => !face) || !logo) setWarning('Algunas fotos no cargaron. Puedes volver a cargar las imágenes.')
+        if (photos.some(photo => !photo) || faces.some(face => !face) || paradise.some(photo => !photo) || !logo) setWarning('Algunas fotos no cargaron. Puedes volver a cargar las imágenes.')
       } catch {
         if (!cancelled) { setPreview(''); setWarning('No se pudo generar la imagen. Intenta de nuevo.') }
       } finally {
@@ -177,10 +218,10 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
   }, [categories, year, slide, blur, opacity, retry])
 
   return <div className="studio-grid"><section className="admin-panel studio-settings">
-    <label>Imagen del carrusel<select value={slide} onChange={event => setSlide(Number(event.target.value))}><option value={0}>1 · No te olvides de votar</option><option value={1}>2 · Los más premiados</option></select></label>
+    <label>Imagen del carrusel<select value={slide} onChange={event => setSlide(Number(event.target.value))}><option value={0}>1 · No te olvides de votar</option><option value={1}>2 · Los más premiados</option><option value={2}>3 · Curiosidad 2 — Paradise</option></select></label>
     <label>Difuminado del fondo<input type="range" min={0} max={12} value={blur} onChange={event => setBlur(Number(event.target.value))} /></label>
     <label>Intensidad de las fotos<input type="range" min={10} max={80} value={opacity} onChange={event => setOpacity(Number(event.target.value))} /></label>
-    <p>Publicación vertical · 1080 × 1350. Descarga las dos imágenes para publicarlas en orden.</p>
+    <p>Publicación vertical · 1080 × 1350. Descarga las tres imágenes para publicarlas en orden.</p>
     <p>Historial proporcionado por la organización. don_kevo_ tiene 7, Esmehsv y TheKrisRules tienen 3 cada uno, y luakatt_, ElNaiti_, SoyPhirio y AlfonSolucioneZ tienen 2 cada uno.</p>
     <button className="admin-button primary" disabled={busy || !preview} onClick={() => {
       const link = document.createElement('a')
@@ -190,5 +231,5 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
     }}>Descargar PNG ↓</button>
     <button className="admin-button" disabled={busy} onClick={() => { cache.current.clear(); setRetry(value => value + 1) }}>Volver a cargar imágenes</button>
     <p role="status">{warning || (busy ? 'Preparando imagen…' : '')}</p>
-  </section><section className="studio-preview" aria-busy={busy}>{preview && <img src={preview} alt={slide === 0 ? 'Recordatorio de votación' : 'Pirámide histórica de Gorritos de Oro'} style={{opacity: busy ? .4 : 1}} />}</section></div>
+  </section><section className="studio-preview" aria-busy={busy}>{preview && <img src={preview} alt={['Recordatorio de votación', 'Pirámide histórica de Gorritos de Oro', 'Paradise III y IV, dos victorias consecutivas'][slide]} style={{opacity: busy ? .4 : 1}} />}</section></div>
 }
