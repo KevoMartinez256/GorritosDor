@@ -7,7 +7,6 @@ const winners = [
   { login: 'don_kevo_', name: 'don_kevo_', awards: 7 },
   { login: 'esmehsv', name: 'Esmehsv', awards: 3 },
   { login: 'luakatt_', name: 'luakatt_', awards: 2 },
-  { login: 'elnaiti_', name: 'ElNaiti_', awards: 2 },
   { login: 'thekrisrules', name: 'TheKrisRules', awards: 3 },
   { login: 'soyphirio', name: 'SoyPhirio', awards: 2, photo: '/nominees/2026/soyphirio-creador.png' },
   { login: 'alfonsolucionez', name: 'AlfonSolucioneZ', awards: 2 },
@@ -129,8 +128,8 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
           // Each row is one award total. People with equal totals share the same row.
           const rows = [
             { indexes: [0], y: 365, width: 310, height: 260 },
-            { indexes: [1, 4], y: 645, width: 310, height: 220 },
-            { indexes: [2, 3, 5, 6], y: 885, width: 225, height: 235 },
+            { indexes: [1, 3], y: 645, width: 310, height: 220 },
+            { indexes: [2, 4, 5], y: 885, width: 300, height: 235 },
           ]
           for (const row of rows) {
             const gap = 12
@@ -167,7 +166,7 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
           text(context, 'Las votaciones siguen abiertas.', 540, 1230, 24)
         } else {
           context.fillStyle = '#78d7d1'
-          text(context, 'CURIOSIDAD 2', 540, 240, 24)
+          text(context, 'UN DATO CURIOSO', 540, 240, 24)
           context.fillStyle = '#eed5a0'
           text(context, 'Paradise hizo historia', 540, 320, 66, 940, true)
           context.fillStyle = '#f1f4ee'
@@ -218,11 +217,11 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
   }, [categories, year, slide, blur, opacity, retry])
 
   return <div className="studio-grid"><section className="admin-panel studio-settings">
-    <label>Imagen del carrusel<select value={slide} onChange={event => setSlide(Number(event.target.value))}><option value={0}>1 · No te olvides de votar</option><option value={1}>2 · Los más premiados</option><option value={2}>3 · Curiosidad 2 — Paradise</option></select></label>
+    <label>Imagen del carrusel<select value={slide} onChange={event => setSlide(Number(event.target.value))}><option value={0}>1 · No te olvides de votar</option><option value={1}>2 · Los más premiados</option><option value={2}>3 · Un dato curioso — Paradise</option></select></label>
     <label>Difuminado del fondo<input type="range" min={0} max={12} value={blur} onChange={event => setBlur(Number(event.target.value))} /></label>
     <label>Intensidad de las fotos<input type="range" min={10} max={80} value={opacity} onChange={event => setOpacity(Number(event.target.value))} /></label>
     <p>Publicación vertical · 1080 × 1350. Descarga las tres imágenes para publicarlas en orden.</p>
-    <p>Historial proporcionado por la organización. don_kevo_ tiene 7, Esmehsv y TheKrisRules tienen 3 cada uno, y luakatt_, ElNaiti_, SoyPhirio y AlfonSolucioneZ tienen 2 cada uno.</p>
+    <p>Historial proporcionado por la organización. don_kevo_ tiene 7, Esmehsv y TheKrisRules tienen 3 cada uno, y luakatt_, SoyPhirio y AlfonSolucioneZ tienen 2 cada uno.</p>
     <button className="admin-button primary" disabled={busy || !preview} onClick={() => {
       const link = document.createElement('a')
       link.href = preview
