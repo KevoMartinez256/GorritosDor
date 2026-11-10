@@ -105,7 +105,7 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
         context.fillStyle = '#a9c7ca'
         text(context, `A W A R D S  /  ${year}`, 540, 153, 20)
 
-        if (slide === 0) {
+        if (slide === 0 || slide === 3) {
           context.fillStyle = '#78d7d1'
           text(context, 'LAS VOTACIONES SIGUEN ABIERTAS', 540, 490, 27)
           context.fillStyle = '#eed5a0'
@@ -114,8 +114,11 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
           context.fillStyle = '#f1f4ee'
           text(context, 'Tu elección también hace historia.', 540, 840, 32)
           context.fillStyle = '#eed5a0'
-          text(context, '¿Quiénes tienen más Gorritos de Oro?', 540, 1020, 34, 940, true)
-          text(context, 'Desliza y descubre los datos curiosos →', 540, 1080, 27)
+          const question = slide === 0
+            ? '¿Quiénes tienen más Gorritos de Oro?'
+            : '¿Qué serie ganó dos años consecutivos?'
+          text(context, question, 540, 1020, 34, 940, true)
+          text(context, 'Desliza y descubre el dato curioso →', 540, 1080, 27)
           context.fillStyle = '#a9c7ca'
           text(context, 'Vota hasta el 11 de diciembre · 19:00 h CDMX', 540, 1205, 23)
         } else if (slide === 1) {
@@ -217,18 +220,28 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
   }, [categories, year, slide, blur, opacity, retry])
 
   return <div className="studio-grid"><section className="admin-panel studio-settings">
-    <label>Imagen del carrusel<select value={slide} onChange={event => setSlide(Number(event.target.value))}><option value={0}>1 · No te olvides de votar</option><option value={1}>2 · Los más premiados</option><option value={2}>3 · Un dato curioso — Paradise</option></select></label>
+    <label>Imagen del carrusel<select value={slide} onChange={event => setSlide(Number(event.target.value))}>
+      <optgroup label="Los más premiados">
+        <option value={0}>1 · Portada — Los más premiados</option>
+        <option value={1}>2 · Dato — Los más premiados</option>
+      </optgroup>
+      <optgroup label="Paradise">
+        <option value={3}>1 · Portada — Paradise</option>
+        <option value={2}>2 · Dato — Paradise</option>
+      </optgroup>
+    </select></label>
     <label>Difuminado del fondo<input type="range" min={0} max={12} value={blur} onChange={event => setBlur(Number(event.target.value))} /></label>
     <label>Intensidad de las fotos<input type="range" min={10} max={80} value={opacity} onChange={event => setOpacity(Number(event.target.value))} /></label>
-    <p>Publicación vertical · 1080 × 1350. Descarga las tres imágenes para publicarlas en orden.</p>
+    <p>Publicación vertical · 1080 × 1350. Cada dato tiene su propia portada. Descarga la portada y el dato del mismo tema para publicarlos juntos.</p>
     <p>Historial proporcionado por la organización. don_kevo_ tiene 7, Esmehsv y TheKrisRules tienen 3 cada uno, y luakatt_, SoyPhirio y AlfonSolucioneZ tienen 2 cada uno.</p>
     <button className="admin-button primary" disabled={busy || !preview} onClick={() => {
       const link = document.createElement('a')
       link.href = preview
-      link.download = `gorritos-${year}-recordatorio-${slide + 1}.png`
+      const filename = ['premiados-1-portada', 'premiados-2-dato', 'paradise-2-dato', 'paradise-1-portada'][slide]
+      link.download = `gorritos-${year}-${filename}.png`
       link.click()
     }}>Descargar PNG ↓</button>
     <button className="admin-button" disabled={busy} onClick={() => { cache.current.clear(); setRetry(value => value + 1) }}>Volver a cargar imágenes</button>
     <p role="status">{warning || (busy ? 'Preparando imagen…' : '')}</p>
-  </section><section className="studio-preview" aria-busy={busy}>{preview && <img src={preview} alt={['Recordatorio de votación', 'Pirámide histórica de Gorritos de Oro', 'Paradise III y IV, dos victorias consecutivas'][slide]} style={{opacity: busy ? .4 : 1}} />}</section></div>
+  </section><section className="studio-preview" aria-busy={busy}>{preview && <img src={preview} alt={['Portada de los más premiados', 'Pirámide histórica de Gorritos de Oro', 'Paradise III y IV, dos victorias consecutivas', 'Portada del dato curioso de Paradise'][slide]} style={{opacity: busy ? .4 : 1}} />}</section></div>
 }
