@@ -9,7 +9,7 @@ const winners = [
   { login: 'luakatt_', name: 'luakatt_', awards: 2 },
   { login: 'elnaiti_', name: 'ElNaiti_', awards: 2 },
   { login: 'thekrisrules', name: 'TheKrisRules', awards: 2 },
-  { login: 'phirio', name: 'Phirio', awards: 2 },
+  { login: 'soyphirio', name: 'SoyPhirio', awards: 2, photo: '/nominees/2026/soyphirio-creador.png' },
   { login: 'alfonsolucionez', name: 'AlfonSolucioneZ', awards: 2 },
 ]
 
@@ -59,7 +59,7 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
         const nominees = [...new Map(categories.flatMap(category => category.nominees).filter(nominee => nominee.avatar_url).map(nominee => [nominee.avatar_url, nominee])).values()]
         const [photos, faces, logo] = await Promise.all([
           Promise.all(nominees.map(nominee => image(nominee.avatar_url!.startsWith('/nominees/') ? nominee.avatar_url! : `/api/admin/portrait/${nominee.id}`))),
-          Promise.all(winners.map(winner => image(`/nominees/2026/history/${winner.login}.png`))),
+          Promise.all(winners.map(winner => image(winner.photo || `/nominees/2026/history/${winner.login}.png`))),
           image('/chaparritaspng.png'),
         ])
         if (cancelled) return
@@ -181,7 +181,7 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
     <label>Difuminado del fondo<input type="range" min={0} max={12} value={blur} onChange={event => setBlur(Number(event.target.value))} /></label>
     <label>Intensidad de las fotos<input type="range" min={10} max={80} value={opacity} onChange={event => setOpacity(Number(event.target.value))} /></label>
     <p>Publicación vertical · 1080 × 1350. Descarga las dos imágenes para publicarlas en orden.</p>
-    <p>Historial proporcionado por la organización. don_kevo_ tiene 7, Esmehsv tiene 3 y luakatt_, ElNaiti_, TheKrisRules, Phirio y AlfonSolucioneZ tienen 2 cada uno.</p>
+    <p>Historial proporcionado por la organización. don_kevo_ tiene 7, Esmehsv tiene 3 y luakatt_, ElNaiti_, TheKrisRules, SoyPhirio y AlfonSolucioneZ tienen 2 cada uno.</p>
     <button className="admin-button primary" disabled={busy || !preview} onClick={() => {
       const link = document.createElement('a')
       link.href = preview
