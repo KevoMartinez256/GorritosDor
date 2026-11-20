@@ -12,6 +12,15 @@ const winners = [
   { login: 'alfonsolucionez', name: 'AlfonSolucioneZ', awards: 2 },
 ]
 
+const coverQuestions: Record<number, string> = {
+  0: '¿Quiénes tienen más Gorritos de Oro?',
+  3: '¿Qué serie ganó dos años consecutivos?',
+  4: '¿Qué creador ganó dos años consecutivos?',
+  6: '¿Cuántos votos hacen historia?',
+  8: '¿Quién acumula más nominaciones?',
+}
+const filenames = ['premiados-1-portada', 'premiados-2-dato', 'paradise-2-dato', 'paradise-1-portada', 'soyphirio-1-portada', 'soyphirio-2-dato', 'votos-1-portada', 'votos-2-dato', 'don-kevo-1-portada', 'don-kevo-2-dato']
+
 function loadImage(source: string): Promise<HTMLImageElement | null> {
   return new Promise(resolve => {
     const image = new Image()
@@ -105,7 +114,7 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
         context.fillStyle = '#a9c7ca'
         text(context, `A W A R D S  /  ${year}`, 540, 153, 20)
 
-        if (slide === 0 || slide === 3) {
+        if (coverQuestions[slide]) {
           context.fillStyle = '#78d7d1'
           text(context, 'LAS VOTACIONES SIGUEN ABIERTAS', 540, 490, 27)
           context.fillStyle = '#eed5a0'
@@ -114,10 +123,7 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
           context.fillStyle = '#f1f4ee'
           text(context, 'Tu elección también hace historia.', 540, 840, 32)
           context.fillStyle = '#eed5a0'
-          const question = slide === 0
-            ? '¿Quiénes tienen más Gorritos de Oro?'
-            : '¿Qué serie ganó dos años consecutivos?'
-          text(context, question, 540, 1020, 34, 940, true)
+          text(context, coverQuestions[slide], 540, 1020, 34, 940, true)
           text(context, 'Desliza y descubre el dato curioso →', 540, 1080, 27)
           context.fillStyle = '#a9c7ca'
           text(context, 'Vota hasta el 11 de diciembre · 19:00 h CDMX', 540, 1205, 23)
@@ -167,7 +173,7 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
           text(context, '¿Quién sumará otro este año? Tú eliges.', 540, 1190, 32, 940, true)
           context.fillStyle = '#f1f4ee'
           text(context, 'Las votaciones siguen abiertas.', 540, 1230, 24)
-        } else {
+        } else if (slide === 2) {
           context.fillStyle = '#78d7d1'
           text(context, 'UN DATO CURIOSO', 540, 240, 24)
           context.fillStyle = '#eed5a0'
@@ -204,6 +210,74 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
           text(context, '¿Se vendrá el tercero?', 540, 1100, 64, 940, true)
           context.fillStyle = '#f1f4ee'
           text(context, 'Tú eliges. No te olvides de votar.', 540, 1180, 30)
+        } else if (slide === 7) {
+          context.fillStyle = '#78d7d1'
+          text(context, 'UN DATO CURIOSO', 540, 240, 24)
+          context.fillStyle = '#eed5a0'
+          text(context, 'Cada voto hace historia', 540, 325, 62, 940, true)
+          context.fillStyle = '#f1f4ee'
+          text(context, 'Votos sumados entre todas las categorías', 540, 390, 29)
+          const editions = [
+            { label: 'PRIMERA EDICIÓN', total: 'Más de 150', y: 460 },
+            { label: 'SEGUNDA EDICIÓN', total: '290', y: 730 },
+          ]
+          for (const edition of editions) {
+            context.fillStyle = '#12313bee'
+            context.beginPath()
+            context.roundRect(150, edition.y, 780, 230, 22)
+            context.fill()
+            context.strokeStyle = '#eed5a060'
+            context.stroke()
+            context.fillStyle = '#78d7d1'
+            text(context, edition.label, 540, edition.y + 48, 24)
+            context.fillStyle = '#eed5a0'
+            text(context, edition.total, 540, edition.y + 145, 86, 730, true)
+            context.fillStyle = '#f1f4ee'
+            text(context, 'votos', 540, edition.y + 195, 30)
+          }
+          context.fillStyle = '#eed5a0'
+          text(context, '¿Cuántos habrá en la tercera?', 540, 1080, 53, 940, true)
+          context.fillStyle = '#f1f4ee'
+          text(context, 'Suma tu voto a esta edición.', 540, 1170, 32)
+        } else {
+          const isPhirio = slide === 5
+          const face = faces[isPhirio ? 4 : 0]
+          context.fillStyle = '#78d7d1'
+          text(context, 'UN DATO CURIOSO', 540, 240, 24)
+          context.fillStyle = '#eed5a0'
+          text(context, isPhirio ? 'SoyPhirio va por el tercero' : 'Don Kevo, el más nominado', 540, 325, 62, 940, true)
+          context.save()
+          context.beginPath()
+          context.roundRect(340, 385, 400, 400, 25)
+          context.clip()
+          context.fillStyle = '#12313b'
+          context.fillRect(340, 385, 400, 400)
+          if (face) portrait(context, face, 340, 385, 400, 400)
+          else {
+            context.fillStyle = '#eed5a0'
+            text(context, isPhirio ? 'SP' : 'DK', 540, 610, 85, 380)
+          }
+          context.restore()
+          context.fillStyle = '#f1f4ee'
+          text(context, isPhirio ? 'Phirio · SoyPhirio' : 'Don Kevo · don_kevo_', 540, 840, 34)
+          if (isPhirio) {
+            text(context, 'Ha ganado Creador de Contenido', 540, 915, 35)
+            context.fillStyle = '#eed5a0'
+            text(context, 'dos años consecutivos.', 540, 975, 43, 940, true)
+            text(context, '¿Se vendrá el tercero?', 540, 1090, 64, 940, true)
+          } else {
+            const stats = [{ x: 310, total: '12', label: 'NOMINACIONES' }, { x: 770, total: '7', label: 'GORRITOS GANADOS' }]
+            for (const stat of stats) {
+              context.fillStyle = '#eed5a0'
+              text(context, stat.total, stat.x, 980, 100, 400, true)
+              context.fillStyle = '#78d7d1'
+              text(context, stat.label, stat.x, 1030, 25, 400)
+            }
+            context.fillStyle = '#eed5a0'
+            text(context, '¿Sumará otro este año?', 540, 1120, 52, 940, true)
+          }
+          context.fillStyle = '#f1f4ee'
+          text(context, 'Tú eliges. No te olvides de votar.', 540, 1200, 30)
         }
         context.fillStyle = '#a9c7ca'
         text(context, 'gorritos-dor.vercel.app', 540, 1285, 25)
@@ -229,6 +303,18 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
         <option value={3}>1 · Portada — Paradise</option>
         <option value={2}>2 · Dato — Paradise</option>
       </optgroup>
+      <optgroup label="SoyPhirio · Dos años consecutivos">
+        <option value={4}>1 · Portada — SoyPhirio</option>
+        <option value={5}>2 · Dato — SoyPhirio</option>
+      </optgroup>
+      <optgroup label="Votos de las primeras ediciones">
+        <option value={6}>1 · Portada — Votos</option>
+        <option value={7}>2 · Dato — Votos</option>
+      </optgroup>
+      <optgroup label="Don Kevo · El más nominado">
+        <option value={8}>1 · Portada — Don Kevo</option>
+        <option value={9}>2 · Dato — Don Kevo</option>
+      </optgroup>
     </select></label>
     <label>Difuminado del fondo<input type="range" min={0} max={12} value={blur} onChange={event => setBlur(Number(event.target.value))} /></label>
     <label>Intensidad de las fotos<input type="range" min={10} max={80} value={opacity} onChange={event => setOpacity(Number(event.target.value))} /></label>
@@ -237,11 +323,11 @@ export default function HistoryCarousel({ categories, year }: { categories: Cate
     <button className="admin-button primary" disabled={busy || !preview} onClick={() => {
       const link = document.createElement('a')
       link.href = preview
-      const filename = ['premiados-1-portada', 'premiados-2-dato', 'paradise-2-dato', 'paradise-1-portada'][slide]
+      const filename = filenames[slide]
       link.download = `gorritos-${year}-${filename}.png`
       link.click()
     }}>Descargar PNG ↓</button>
     <button className="admin-button" disabled={busy} onClick={() => { cache.current.clear(); setRetry(value => value + 1) }}>Volver a cargar imágenes</button>
     <p role="status">{warning || (busy ? 'Preparando imagen…' : '')}</p>
-  </section><section className="studio-preview" aria-busy={busy}>{preview && <img src={preview} alt={['Portada de los más premiados', 'Pirámide histórica de Gorritos de Oro', 'Paradise III y IV, dos victorias consecutivas', 'Portada del dato curioso de Paradise'][slide]} style={{opacity: busy ? .4 : 1}} />}</section></div>
+  </section><section className="studio-preview" aria-busy={busy}>{preview && <img src={preview} alt={`Vista previa · ${filenames[slide]}`} style={{opacity: busy ? .4 : 1}} />}</section></div>
 }
