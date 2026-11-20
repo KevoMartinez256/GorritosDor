@@ -31,6 +31,29 @@ export default function Invitation({ categories, year }: { categories: Category[
   const [busy, setBusy] = useState(true)
   const [warning, setWarning] = useState('')
   const [retry, setRetry] = useState(0)
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState('')
+
+  async function downloadChecklist() {
+    setExporting(true)
+    setExportError('')
+    try {
+      const response = await fetch('/api/admin/invitations-export', { cache: 'no-store' })
+      if (!response.ok || !response.headers.get('content-type')?.includes('spreadsheetml')) {
+        throw new Error('No se pudo descargar el Excel. Recarga la página e intenta de nuevo.')
+      }
+      const url = URL.createObjectURL(await response.blob())
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `invitaciones-gorritos-${year}.xlsx`
+      link.click()
+      setTimeout(() => URL.revokeObjectURL(url), 60000)
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'No se pudo descargar el Excel.')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -117,6 +140,9 @@ export default function Invitation({ categories, year }: { categories: Category[
 
   return <div className="studio-grid">
     <section className="admin-panel studio-settings">
+      <button className="admin-button" disabled={exporting} onClick={downloadChecklist}>{exporting ? 'Preparando Excel…' : 'Descargar Excel de invitados ↓'}</button>
+      <p>Lista completa con una columna Sí/No para llevar el seguimiento en Excel. Cada descarga comienza con todos en No.</p>
+      {exportError && <p role="alert">{exportError}</p>}
       <label>Nominado<select value={selectedId} onChange={event => {
         setSelectedId(event.target.value)
         setCustomPhoto('')
