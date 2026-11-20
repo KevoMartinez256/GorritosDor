@@ -88,8 +88,8 @@ export default function Control({ categories }: { categories: Category[] }) {
       <button className="admin-button primary" disabled={busy || !state} onClick={() => scene('results')}>04 · Mostrar porcentajes</button>
       <label style={{ display: 'flex', gap: 10, alignItems: 'center' }}><input style={{ width: 'auto' }} type="checkbox" checked={winnerConfirmed} onChange={e => setWinnerConfirmed(e.target.checked)} />Listo para revelar {category.name}</label>
       <button className="admin-button primary" disabled={busy || !state || !winnerConfirmed} onClick={() => scene('winner')}>05 · Revelar ganador</button>
-      <p>Porcentajes y ganador usan el mismo corte. Con la votación abierta se indica líder provisional. Los empates se muestran juntos.</p>
-      <button className="admin-button" disabled={busy || !state} onClick={() => { if (confirm('¿Tomar un nuevo corte de votos y mostrarlo ahora en OBS?')) scene('results', true) }}>Tomar nuevo corte y mostrar porcentajes</button>
+      <p>Mostrar porcentajes prepara las barras en 0 %. Revelar ganador inicia 8 segundos de suspenso y termina con los porcentajes reales del mismo corte. Con la votación abierta se indica líder provisional. Los empates se muestran juntos.</p>
+      <button className="admin-button" disabled={busy || !state} onClick={() => { if (confirm('¿Tomar un nuevo corte y preparar las barras en 0 % en OBS?')) scene('results', true) }}>Tomar nuevo corte y preparar porcentajes</button>
       <button className="admin-button" disabled={busy} onClick={() => { if (!dirty || confirm('¿Descartar los enlaces sin guardar y actualizar el control?')) void refresh().then(() => setMessage('Control actualizado.')).catch(e => setMessage(e.message)) }}>Actualizar control</button>
     </section><section className="admin-panel">
       <h2>Vista previa · audio silenciado</h2>
